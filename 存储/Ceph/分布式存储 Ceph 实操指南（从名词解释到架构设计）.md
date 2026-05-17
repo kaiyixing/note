@@ -1,3 +1,9 @@
+---
+title: 分布式存储 Ceph 实操指南（从"名词解释"到"架构设计"）
+tags:
+  - 存储/ceph
+---
+
 # 分布式存储 Ceph 实操指南（从"名词解释"到"架构设计"）
 
 以下是两个核心任务的完整实验手册，建议在**3台虚拟机环境**中操作。
@@ -539,6 +545,8 @@ ceph osd pool set rgw-pool crush_rule rack-rule
 
 ### B5：故障场景模拟与恢复
 
+参见 [[ceph详细架构#故障恢复流程]] 中的恢复流程可视化。
+
 ```bash
 # ==================== 场景 1：单块 OSD 磁盘故障 ====================
 
@@ -717,6 +725,8 @@ ceph orch apply mon ceph-node4
 
 ------
 
+架构图与 CRUSH 算法流程图请参考 [[ceph详细架构]]。
+
 ## 🔴 Ceph 架构核心概念
 
 ### 核心组件说明
@@ -834,7 +844,13 @@ ceph orch apply mon ceph-node4
 1. **CephFS 文件系统**：学习 MDS 配置和 POSIX 兼容
 2. **性能调优**：学习 OSD 参数、网络优化、BLUESTORE 配置
 3. **安全加固**：学习 CephX 认证、加密、网络隔离
-4. **云原生集成**：学习 Ceph CSI、Rook、Kubernetes 集成
+4. **云原生集成**：学习 Ceph CSI、Rook、[[Kubernetes知识梳理|Kubernetes]] 集成
 5. **认证考试**：Ceph 官方认证、OpenStack 存储专家
 
 完成这两个任务后，你对 Ceph 的理解会从"名词解释"提升到"架构设计"级别，面试时能自信地说出具体配置和故障处理方案！
+
+## 相关笔记
+
+- [[ceph详细架构]] — Ceph 详细架构图（含 CRUSH、PG 状态机、故障恢复流程）
+- [[Kubernetes知识梳理]] — Kubernetes 存储集成（Rook/CSI）
+- [[路由与交换的核心原理及区别]] — 网络基础（Ceph 集群网络架构）

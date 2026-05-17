@@ -1,4 +1,10 @@
-在 Kubernetes 中，**滚动更新（Rolling Update）主要通过 `Deployment` 资源实现**，核心管理命令集中在 `kubectl rollout` 系列。以下是关键命令及实用技巧（以 Deployment 为例）：
+---
+title: k8s滚动更新
+tags:
+  - "#容器/k8s/部署"
+---
+
+在 Kubernetes 中，**滚动更新（Rolling Update）主要通过 [[容器与编排/Kubernetes/基础知识/Kubernetes组件详细解析|Deployment]] 资源实现**，核心管理命令集中在 `kubectl rollout` 系列。以下是关键命令及实用技巧（以 Deployment 为例），相关概念可参考 [[容器与编排/Kubernetes/基础知识/Kubernetes知识梳理|Kubernetes知识梳理]]。滚动更新是 [[容器与编排/Kubernetes/CI-CD与集成/CI-CD集成详解|CI/CD]] 流水线中的关键部署环节，与 [[容器与编排/Kubernetes/容器运行时/Kubernetes 使用 containerd 作为容器运行时（详细步骤）|容器运行时]] 配合完成应用更新。
 
 ------
 
@@ -102,3 +108,17 @@ kubectl rollout undo deployment/<deployment-name>
 # 回滚到指定版本
 kubectl rollout undo deployment/<deployment-name> --to-revision=2
 ```
+
+> 💡 **集成建议**：滚动更新是 CI/CD 流水线的关键环节。结合 [[../../Helm与包管理/Helm包管理详解|Helm]] 可以实现版本化部署管理，配合 [[../../CI-CD与集成/CI-CD集成详解|CI/CD 工具]] 可完全自动化更新流程。详细的 Kubernetes 知识体系参考 [[../../基础知识/Kubernetes知识梳理|Kubernetes 知识梳理]]。
+
+## 相关笔记
+
+- [[../../基础知识/Kubernetes知识梳理|Kubernetes 知识梳理]] — 集群知识体系
+- [[../../基础知识/Kubernetes组件详细解析|Kubernetes 组件详细解析]] — Deployment 控制器与滚动更新原理
+- [[../../CI-CD与集成/CI-CD集成详解|CI/CD 集成详解]] — 自动化部署流水线
+- [[../../Helm与包管理/Helm包管理详解|Helm 包管理详解]] — 版本化部署管理
+- [[../../Ingress与网络策略/网络插件详解（Calico-Flannel）|网络插件详解]] — 网络插件与更新期间网络通信
+- [[../../权限与安全/RBAC权限管理详解|RBAC 权限管理详解]] — 部署相关的 RBAC 权限配置
+- [[../../容器运行时/Kubernetes 使用 containerd 作为容器运行时（详细步骤）|containerd 容器运行时]] — 容器运行时与滚动更新配合
+- [[../../Docker/Compose进阶/Docker vs Docker Compose|Docker vs Docker Compose]] — 容器基础技术
+- [[../../../监控与可观测性/Prometheus/Kubernetes监控部署指南|Kubernetes 监控部署指南]] — 部署监控与告警

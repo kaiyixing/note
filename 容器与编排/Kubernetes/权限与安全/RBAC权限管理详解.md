@@ -1,6 +1,12 @@
+---
+title: Kubernetes RBAC 权限管理详解
+tags:
+  - "#容器/k8s/安全"
+---
+
 # Kubernetes RBAC 权限管理详解
 
-基于项目描述中的"配置 Kubernetes 证书与 RBAC 权限管理"，以下是 RBAC 的详细知识：
+基于项目描述中的"配置 Kubernetes 证书与 RBAC 权限管理"，以下是 RBAC 的详细知识。有关整体架构参考，参见 [[容器与编排/Kubernetes/基础知识/Kubernetes知识梳理|Kubernetes知识梳理]]。
 
 ## 一、RBAC 核心概念
 
@@ -17,6 +23,8 @@ Subject → (Cluster)RoleBinding → (Cluster)Role → API Resources
     ↑                             ↑
   用户/服务账户                   权限规则集合
 ```
+
+RBAC 由 API Server 的鉴权模块强制执行，参见 [[容器与编排/Kubernetes/基础知识/Kubernetes组件详细解析|Kubernetes组件详细解析]] 中关于 kube-apiserver 的认证与授权配置。关于 RBAC 面试常见问题，可参考 [[面试准备/面经/面试问答|面试问答]]。
 
 ## 二、RBAC 资源定义
 
@@ -279,6 +287,8 @@ kubectl describe rolebinding <name> -n <namespace>
 kubectl describe clusterrolebinding <name>
 ```
 
+RBAC 审计日志可与 [[监控与可观测性/Prometheus/Kubernetes监控部署指南|Prometheus 监控]] 集成，实现安全事件的告警与可视化。
+
 ### 7.3 审计日志
 ```yaml
 # API Server 审计配置
@@ -373,7 +383,7 @@ rules:
 {% endfor %}
 ```
 
-### 9.2 Helm Chart 中的 RBAC
+### 9.2 [[../../Helm与包管理/Helm包管理详解|Helm Chart]] 中的 RBAC
 ```yaml
 # templates/rbac.yaml
 {{- if .Values.rbac.create }}
@@ -405,4 +415,19 @@ rbac:
 
 ---
 
-**关键要点**：RBAC 是 Kubernetes 安全的核心，需要结合证书管理、命名空间隔离和最小权限原则，构建安全的集群访问控制体系。
+## 相关笔记
+
+- [[容器与编排/Kubernetes/基础知识/Kubernetes知识梳理|Kubernetes知识梳理]] — RBAC 章节概述
+- [[容器与编排/Kubernetes/基础知识/Kubernetes组件详细解析|Kubernetes组件详细解析]] — API Server 认证与授权
+- [[容器与编排/Kubernetes/Helm与包管理/Helm包管理详解|Helm 包管理详解]] — Helm Chart 中的 RBAC 集成
+- [[容器与编排/Kubernetes/CI-CD与集成/CI-CD集成详解|CI/CD 集成详解]] — CI/CD 工具 RBAC 配置
+- [[容器与编排/Kubernetes/部署与更新/k8s滚动更新|k8s 滚动更新]] — 部署操作的 RBAC 权限需求
+- [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解（Calico-Flannel）|网络插件详解]] — 网络组件 RBAC 权限配置
+- [[容器与编排/Kubernetes/容器运行时/Kubernetes 使用 containerd 作为容器运行时（详细步骤）|containerd 容器运行时]] — 容器运行时的服务账户配置
+- [[容器与编排/Docker/Compose进阶/Docker vs Docker Compose|Docker vs Docker Compose]] — 容器技术生态对比
+- [[监控与可观测性/Prometheus/Kubernetes监控部署指南|Kubernetes 监控部署指南]] — 审计日志与监控集成
+- [[面试准备/面经/面试问答|面试问答]] — RBAC 面试常见问题
+
+---
+
+**关键要点**：RBAC 是 Kubernetes 安全的核心，需要结合证书管理、命名空间隔离和最小权限原则，构建安全的集群访问控制体系。组件层面的权限配置可参考 [[容器与编排/Kubernetes/基础知识/Kubernetes组件详细解析|Kubernetes组件详细解析]]。在 [[容器与编排/Kubernetes/部署与更新/k8s滚动更新|滚动更新]] 等部署操作中，需确保 ServiceAccount 具有充分的 RBAC 权限。

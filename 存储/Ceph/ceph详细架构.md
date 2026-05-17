@@ -1,3 +1,9 @@
+---
+title: Ceph 详细架构图
+tags:
+  - 存储/ceph
+---
+
 # Ceph 详细架构图
 
 ## 整体架构
@@ -174,6 +180,8 @@ flowchart TB
     CACHE --> SSD
 ```
 
+详细部署与实操请参考 [[分布式存储 Ceph 实操指南（从名词解释到架构设计）]]。
+
 ## 高可用架构
 
 ```mermaid
@@ -184,6 +192,7 @@ flowchart TB
     end
     
     subgraph ClusterNetwork["Cluster Network - 192.168.0.0/24"]
+        (生产环境建议 [[路由与交换的核心原理及区别|网络分离]] 配置)
         subgraph CephNodes["Ceph 节点"]
             direction TB
             Node1["Node 1"]
@@ -224,6 +233,8 @@ flowchart TB
     OSD4 <--> OSD5
     OSD5 <--> OSD6
 ```
+
+Ceph 可与 [[Kubernetes知识梳理|Kubernetes]] 集成（通过 Rook/CSI 提供持久化存储）。
 
 ## 三种存储接口
 
@@ -277,4 +288,10 @@ flowchart TB
     DataSync --> Complete
     
     Complete --> Active["Active状态"]
+
+## 相关笔记
+
+- [[分布式存储 Ceph 实操指南（从名词解释到架构设计）]] — Ceph 实操指南与部署
+- [[Kubernetes知识梳理]] — Kubernetes 存储集成（Rook/CSI）
+- [[路由与交换的核心原理及区别]] — 网络基础（Ceph 集群网络架构）
 ```

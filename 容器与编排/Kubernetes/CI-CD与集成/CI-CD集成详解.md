@@ -1,6 +1,12 @@
+---
+title: Kubernetes CI/CD 集成详解
+tags:
+  - "#容器/k8s/CI-CD"
+---
+
 # Kubernetes CI/CD 集成详解
 
-基于项目描述中的"使用 Helm 实现持续集成与持续交付（CI/CD）"，以下是 CI/CD 集成的详细知识：
+基于项目描述中的"使用 Helm 实现持续集成与持续交付（CI/CD）"，以下是 CI/CD 集成的详细知识。有关整体项目架构，参见 [[容器与编排/Kubernetes/基础知识/Kubernetes知识梳理|Kubernetes知识梳理]]。
 
 ## 一、CI/CD 基础概念
 
@@ -24,7 +30,7 @@ Git 仓库 (唯一真相源) → CI 流水线 → CD 工具 → Kubernetes 集�
 - **CI 工具**：Jenkins、GitLab CI、GitHub Actions、CircleCI
 - **CD 工具**：ArgoCD、Flux、Spinnaker、Tekton
 - **镜像仓库**：Docker Hub、Harbor、ECR、GCR
-- **配置管理**：Helm、Kustomize、Jsonnet
+- **配置管理**：[[容器与编排/Kubernetes/Helm与包管理/Helm包管理详解|Helm]]、Kustomize、Jsonnet
 
 ### 2.2 工具选择矩阵
 | 工具 | 类型 | 特点 | 适用场景 |
@@ -829,7 +835,7 @@ production:
   rollbackWindow: 30m
 ```
 
-### 9.3 回滚策略
+### 9.3 回滚策略（参见 [[容器与编排/Kubernetes/部署与更新/k8s滚动更新|k8s滚动更新]]）
 ```yaml
 # 自动回滚配置
 apiVersion: argoproj.io/v1alpha1
@@ -903,4 +909,16 @@ kubectl exec -it <pod-name> -n <namespace> -- curl <service-url>
 
 ---
 
-**关键要点**：Kubernetes CI/CD 需要结合合适的工具链，实现从代码到生产的全流程自动化。GitOps 模式将配置存储在 Git 中，确保环境一致性和可追溯性。
+## 相关笔记
+
+- [[容器与编排/Kubernetes/基础知识/Kubernetes知识梳理|Kubernetes知识梳理]] — 项目整体架构与 CI/CD 章节
+- [[容器与编排/Kubernetes/Helm与包管理/Helm包管理详解|Helm 包管理详解]] — Helm Chart 结构与 CI/CD 集成
+- [[容器与编排/Kubernetes/部署与更新/k8s滚动更新|k8s 滚动更新]] — 滚动更新与回滚操作
+- [[容器与编排/Kubernetes/权限与安全/RBAC权限管理详解|RBAC 权限管理详解]] — CI/CD 工具 RBAC 权限配置
+- [[监控与可观测性/Prometheus/Kubernetes监控部署指南|Kubernetes 监控部署指南]] — CI/CD 流水线监控
+- [[容器与编排/Kubernetes/基础知识/Kubernetes组件详细解析|Kubernetes组件详细解析]] — CI/CD 涉及的核心组件
+- [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解（Calico-Flannel）|网络插件详解]] — 网络策略自动化配置
+- [[容器与编排/Kubernetes/容器运行时/Kubernetes 使用 containerd 作为容器运行时（详细步骤）|containerd 容器运行时]] — 容器镜像拉取与运行
+- [[容器与编排/Docker/Compose进阶/Docker vs Docker Compose|Docker vs Docker Compose]] — 容器技术生态
+
+**关键要点**：Kubernetes CI/CD 需要结合合适的工具链，实现从代码到生产的全流程自动化。GitOps 模式将配置存储在 Git 中，确保环境一致性和可追溯性。部署和包管理相关内容可参考 [[容器与编排/Kubernetes/部署与更新/k8s滚动更新|k8s滚动更新]] 和 [[容器与编排/Kubernetes/Helm与包管理/Helm包管理详解|Helm包管理详解]]。CI/CD 工具本身的 RBAC 权限配置详见 [[容器与编排/Kubernetes/权限与安全/RBAC权限管理详解|RBAC 权限管理详解]]。

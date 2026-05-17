@@ -1,6 +1,21 @@
+---
+title: Linux 系统核心组件配置文件速查表（RedHat/CentOS 系）
+tags:
+  - Linux/配置
+---
+
+﻿---
+title: Linux 系统核心组件配置文件速查表（RedHat/CentOS 系）
+tags:
+  - Linux/配置
+  - Linux
+---
+
 # Linux 系统核心组件配置文件速查表（RedHat/CentOS 系）
 
 我把**网络、用户/组、权限、服务/进程、日志、文件系统**等高频组件都整理成表格，方便你一次性记忆。
+
+> 📎 **关联笔记：** [[Linux 故障排查实操指南（详细步骤）]] · [[Linux命令手册_第1-6章]] · [[Linux系统资源紧张排查学习指南]] · [[为什么选择 Ansible？  ansible的特点优势]]
 
 ---
 
@@ -52,7 +67,7 @@
 |---|---|---|
 |`/var/log/`|系统日志目录|`messages`, `secure`, `dmesg`|
 |`/etc/rsyslog.conf`|rsyslog 日志收集规则|`*.info;mail.none;authpriv.none /var/log/messages`|
-|`/etc/logrotate.conf`|日志轮转（自动切割/清理旧日志）|配置日志保留天数、大小限制|
+|`/etc/logrotate.conf`|日志轮转（自动切割/清理旧日志）|配置日志保留天数、大小限制（参考 [[Linux/系统排障/Linux 故障排查实操指南（详细步骤）\|故障排查指南]] 中的 logrotate 实操）|
 |`/var/log/secure`|安全日志（登录/认证/权限操作）|记录 SSH 登录、sudo 操作等|
 ---
 
@@ -78,5 +93,12 @@
 
 ---
 
-要不要我再帮你做一份**高频命令 vs 对应配置文件**的对照表，让你知道“改这个配置要用哪个命令生效”？
-> 
+要不要我再帮你做一份**高频命令 vs 对应配置文件**的对照表，让你知道"改这个配置要用哪个命令生效"？
+
+## 相关笔记
+
+- [[Linux/系统排障/Linux 故障排查实操指南（详细步骤）|Linux 故障排查实操指南]] - 配置文件对应的故障排查场景
+- [[Linux/命令手册/Linux命令手册_第1-6章|Linux 命令手册]] - 与配置文件对应的操作命令
+- [[自动化运维/Ansible/为什么选择 Ansible？|Ansible 自动化运维]] - 基于配置文件的自动化管理
+- [[Linux/系统配置/Windows 笔记本安装 Ubuntu 双系统|Windows 笔记本安装 Ubuntu 双系统]] - Ubuntu 安装后的配置参考
+- [[网络/网络排障/网络工程与 VLAN 规划实操指南（思科 Cisco 版本）|网络工程与 VLAN 规划]] - 网络配置场景扩展

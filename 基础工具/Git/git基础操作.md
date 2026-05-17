@@ -1,3 +1,9 @@
+---
+title: Git 常用命令速查指南
+tags:
+  - 工具/git
+---
+
 以下是 **Git 常用命令速查指南**（基于 Git 2.23+，兼顾通用性），按使用场景分类整理，附关键说明与安全提示：
 
 ------
@@ -98,9 +104,10 @@ git bisect start                               # 二分法定位 bug（高级）
    `git help <命令>` 或 `git <命令> --help`（如 `git commit --help`）
 5. **学习资源**：
    📚 《Pro Git》中文版（免费在线）｜ 🌐 https://git-scm.com/book/zh/v2
+6. **Git 与 CI/CD**：Git 是 [[容器与编排/Kubernetes/CI-CD与集成/CI-CD集成详解|CI/CD 管道]] 的版本控制基础，代码提交自动触发构建、测试与部署流程。
 
 > ✅ **安全第一**：对 `reset --hard`、`clean`、`push -f` 等危险操作，务必先确认影响范围！
-> 💬 遇到具体问题（如“如何回退已推送的提交？”），欢迎补充细节，我会提供针对性方案！ 😊
+> 💬 遇到具体问题（如"如何回退已推送的提交？"），欢迎补充细节，我会提供针对性方案！ 😊
 
 假设你要创建一个名为 `my-website` 的项目。
 
@@ -159,4 +166,11 @@ git push
 
 # 12. 【后续操作】拉取更新（如果别人改了代码，或者你在别处改了）
 git pull
+
+## 相关笔记
+
+- [[容器与编排/Docker/Compose进阶/Docker vs Docker Compose|Docker vs Docker Compose]] — Docker 项目中 Git 作为版本控制基础
+- [[容器与编排/Kubernetes/CI-CD与集成/CI-CD集成详解|CI/CD 集成详解]] — Git 是 CI/CD 管道的版本控制核心
+- [[面试准备/面经/面试问答|面试问答]] — Git 相关面试问题
+- [[面试准备/面经/大厂运维运维开发面试高频知识点总结|面试高频知识点总结]] — 运维开发岗位中 Git 知识考察
 ```

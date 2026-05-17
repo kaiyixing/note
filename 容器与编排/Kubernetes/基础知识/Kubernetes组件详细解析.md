@@ -1,6 +1,12 @@
+---
+title: Kubernetes 组件详细解析
+tags:
+  - "#容器/k8s/基础"
+---
+
 # Kubernetes 组件详细解析
 
-基于项目描述中提到的组件，以下是各核心组件的详细知识：
+基于项目描述中提到的组件，以下是各核心组件的详细知识。有关整体架构概述，参见 [[容器与编排/Kubernetes/基础知识/Kubernetes知识梳理|Kubernetes知识梳理]]。
 
 ## 一、控制平面组件（Master Node）
 
@@ -8,7 +14,7 @@
 **功能**：集群的统一入口，处理所有 REST 请求
 **关键特性**：
 
-- 认证（Authentication）：验证用户身份
+- 认证（Authentication）：验证用户身份（参见 [[面试准备/面经/大厂运维运维开发面试高频知识点总结|大厂运维运维开发面试高频知识点总结]]）
 - 授权（Authorization）：检查用户权限
 - 准入控制（Admission Control）：资源验证和修改
 - API 版本管理：支持多版本 API
@@ -124,8 +130,8 @@ ETCDCTL_API=3 etcdctl snapshot restore snapshot.db \
 
 ### 2.3 容器运行时
 **支持类型**：
-- **Docker**：传统选择（已弃用，通过 cri-dockerd）
-- **containerd**：推荐选择，CNCF 毕业项目
+- **Docker**：传统选择（已弃用，通过 cri-dockerd），对比详见 [[容器与编排/Docker/Compose进阶/Docker vs Docker Compose|Docker vs Docker Compose]]
+- **[[../../容器运行时/Kubernetes 使用 containerd 作为容器运行时（详细步骤）|containerd]]**：推荐选择，CNCF 毕业项目，安装步骤详见 [[容器与编排/Kubernetes/容器运行时/Kubernetes 使用 containerd 作为容器运行时（详细步骤）|containerd 安装配置]]
 - **CRI-O**：专为 Kubernetes 设计
 
 **配置示例（containerd）**：
@@ -147,10 +153,12 @@ version = 2
 
 | 插件 | 网络模型 | 特点 | 适用场景 |
 |------|---------|------|---------|
-| **Calico** | BGP/Overlay | 网络策略、高性能 | 生产环境、需要网络策略 |
-| **Flannel** | Overlay | 简单、稳定 | 测试环境、简单网络 |
+| **[[../../Ingress与网络策略/网络插件详解（Calico-Flannel）|Calico]]** | BGP/Overlay | 网络策略、高性能 | 生产环境、需要网络策略 |
+| **[[../../Ingress与网络策略/网络插件详解（Calico-Flannel）|Flannel]]** | Overlay | 简单、稳定 | 测试环境、简单网络 |
 | **Cilium** | eBPF | 高性能、安全 | 高性能需求、安全敏感 |
 | **Weave Net** | Overlay | 简单部署、加密 | 简单部署、安全通信 |
+
+Calico 与 Flannel 的详细对比和部署，参见 [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解（Calico-Flannel）|网络插件详解]]。
 
 ### 3.2 DNS 服务
 **CoreDNS**：集群 DNS 解析
@@ -192,7 +200,7 @@ data:
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
 ```
 
-**访问控制**：
+**访问控制**（涉及 RBAC 权限管理，详见 [[容器与编排/Kubernetes/权限与安全/RBAC权限管理详解|RBAC权限管理详解]]）：
 ```yaml
 # 创建管理员 ServiceAccount
 apiVersion: v1
@@ -230,6 +238,8 @@ args:
   - --kubelet-insecure-tls
   - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
 ```
+
+Metrics Server 的数据可用于 [[监控与可观测性/Prometheus/Kubernetes监控部署指南|Prometheus 监控部署]], 实现集群资源监控与告警。
 
 ## 五、组件交互关系
 
@@ -284,6 +294,19 @@ kubectl exec -it <pod-name> -- /bin/sh
 # 端口转发
 kubectl port-forward <pod-name> <local-port>:<pod-port>
 ```
+
+---
+
+## 相关笔记
+
+- [[容器与编排/Kubernetes/基础知识/Kubernetes知识梳理|Kubernetes知识梳理]] — 整体架构与项目知识体系
+- [[容器与编排/Kubernetes/容器运行时/Kubernetes 使用 containerd 作为容器运行时（详细步骤）|containerd 容器运行时]] — 容器运行时安装与配置
+- [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解（Calico-Flannel）|网络插件详解]] — CNI 插件选择与部署
+- [[容器与编排/Kubernetes/权限与安全/RBAC权限管理详解|RBAC 权限管理详解]] — 组件间鉴权与用户权限
+- [[容器与编排/Kubernetes/部署与更新/k8s滚动更新|k8s 滚动更新]] — Deployment 滚动更新机制
+- [[容器与编排/Docker/Compose进阶/Docker vs Docker Compose|Docker vs Docker Compose]] — 容器运行时技术对比
+- [[监控与可观测性/Prometheus/Kubernetes监控部署指南|Kubernetes 监控部署指南]] — 集群监控与 Metrics Server
+- [[面试准备/面经/面试问答|面试问答]] — 组件相关面试常见问题
 
 ---
 

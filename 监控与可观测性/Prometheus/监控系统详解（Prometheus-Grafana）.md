@@ -1,6 +1,13 @@
+---
+title: Kubernetes 监控系统详解：Prometheus + Grafana
+tags:
+  - 监控/prometheus
+  - 监控/grafana
+---
+
 # Kubernetes 监控系统详解：Prometheus + Grafana
 
-基于项目描述中的"部署 Prometheus 和 Grafana 进行集群监控"，以下是监控系统的详细知识：
+基于项目描述中的"部署 Prometheus 和 Grafana 进行集群监控"，以下是监控系统的详细知识。部署实践请参考 [[Kubernetes监控部署指南]]。
 
 ## 一、监控体系架构
 
@@ -18,6 +25,8 @@ cAdvisor (容器指标) + kube-state-metrics (K8s对象状态)
      ↑
 Kubernetes 集群
 ```
+
+数据抓取流程可参考 [[Prometheus数据抓取流程图]]。
 
 ## 二、Prometheus 详解
 
@@ -922,5 +931,15 @@ curl -s "http://alertmanager:9093/api/v2/alerts" | jq
 5. **水平扩展**：多个 Prometheus 实例分片
 
 ---
+
+## 相关笔记
+
+- [[Kubernetes监控部署指南]] — Kubernetes Prometheus 部署指南
+- [[Prometheus数据抓取流程图]] — 数据抓取流程可视化
+- [[组件协作与配置位置详解]] — 组件协作与配置位置
+- [[配置文件存放位置]] — K8s 中配置文件存放位置
+- [[Kubernetes知识梳理]] — Kubernetes 基础知识
+- [[Kubernetes组件详细解析]] — Kubernetes 核心组件详解
+- [[Linux系统资源紧张排查学习指南]] — 系统资源排查与监控
 
 **关键要点**：完整的监控体系需要覆盖基础设施、容器、应用和业务各个层面。Prometheus + Grafana 是 Kubernetes 监控的事实标准，配合 Alertmanager 可以实现完整的监控告警体系。

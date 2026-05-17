@@ -1,6 +1,12 @@
+---
+title: Helm 包管理详解
+tags:
+  - "#容器/k8s/Helm"
+---
+
 # Helm 包管理详解
 
-基于项目描述中的"集成 Helm 包管理工具，自动化部署常见的应用服务"，以下是 Helm 的详细知识：
+基于项目描述中的"集成 Helm 包管理工具，自动化部署常见的应用服务"，以下是 Helm 的详细知识。有关整体项目架构，参见 [[容器与编排/Kubernetes/基础知识/Kubernetes知识梳理|Kubernetes知识梳理]]。
 
 ## 一、Helm 基础概念
 
@@ -21,7 +27,7 @@ Helm Client → Tiller (v2) / Helm Library (v3) → Kubernetes API Server
 
 ### 2.1 主要变化
 - **移除 Tiller**：直接使用 kubeconfig 与集群交互
-- **改进安全模型**：基于 RBAC 的权限控制
+- **改进安全模型**：基于 [[容器与编排/Kubernetes/权限与安全/RBAC权限管理详解|RBAC]] 的权限控制，与 [[容器与编排/Kubernetes/基础知识/Kubernetes组件详细解析|kube-apiserver]] 的鉴权模块配合
 - **Library Charts**：可重用的 Chart 组件
 - **JSON Schema 验证**：Values 文件验证
 - **依赖管理改进**：Chart.yaml 中的 dependencies
@@ -487,7 +493,9 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 ```
 
-## 九、CI/CD 集成
+## 九、[[../../CI-CD与集成/CI-CD集成详解|CI/CD 集成]]
+
+Helm 通过 `helm upgrade` 触发 [[容器与编排/Kubernetes/部署与更新/k8s滚动更新|滚动更新]]，是 CI/CD 流水线中的关键部署环节。
 
 ### 9.1 GitHub Actions
 ```yaml
@@ -568,6 +576,8 @@ helm-deploy:
   only:
     - main
 ```
+
+CI/CD 流水线的健康状态可通过 [[监控与可观测性/Prometheus/Kubernetes监控部署指南|Prometheus 监控]] 进行追踪，实现部署指标可视化。
 
 ### 9.3 ArgoCD 集成
 ```yaml
@@ -692,4 +702,16 @@ helm dependency build ./mychart
 
 ---
 
-**关键要点**：Helm 是 Kubernetes 的包管理标准，通过 Chart 实现应用部署的标准化和自动化。掌握 Helm 可以大大提高 Kubernetes 应用的部署效率和管理能力。
+## 相关笔记
+
+- [[容器与编排/Kubernetes/CI-CD与集成/CI-CD集成详解|CI/CD 集成详解]] — 与 Helm 结合的 CI/CD 流水线
+- [[容器与编排/Kubernetes/基础知识/Kubernetes知识梳理|Kubernetes知识梳理]] — 整体架构与 Helm 章节
+- [[容器与编排/Kubernetes/部署与更新/k8s滚动更新|k8s 滚动更新]] — 通过 helm upgrade 触发滚动更新
+- [[容器与编排/Kubernetes/权限与安全/RBAC权限管理详解|RBAC 权限管理详解]] — Helm 与 RBAC 集成
+- [[容器与编排/Kubernetes/基础知识/Kubernetes组件详细解析|Kubernetes组件详细解析]] — API Server 与 Helm 的交互
+- [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解（Calico-Flannel）|网络插件详解]] — Helm 部署网络插件
+- [[容器与编排/Kubernetes/容器运行时/Kubernetes 使用 containerd 作为容器运行时（详细步骤）|containerd 容器运行时]] — 容器运行时与 Helm Chart
+- [[监控与可观测性/Prometheus/Kubernetes监控部署指南|Kubernetes 监控部署指南]] — Helm 部署 Prometheus Stack
+- [[容器与编排/Docker/Compose进阶/Docker vs Docker Compose|Docker vs Docker Compose]] — 容器技术生态
+
+**关键要点**：Helm 是 Kubernetes 的包管理标准，通过 Chart 实现应用部署的标准化和自动化。掌握 Helm 可以大大提高 Kubernetes 应用的部署效率和管理能力。相关内容还可参考 [[容器与编排/Kubernetes/基础知识/Kubernetes知识梳理|Kubernetes知识梳理]] 和 [[容器与编排/Kubernetes/部署与更新/k8s滚动更新|k8s滚动更新]]。

@@ -1,3 +1,9 @@
+---
+title: Docker vs Docker Compose：命令操作层面的总总结
+tags:
+  - 容器/docker
+---
+
 当然可以，我给你把前面所有关于 **Docker 与 Docker Compose 的命令层面区别**做一个**浓缩但完整的总结**，方便你快速复习和查阅。
 
 ------
@@ -62,7 +68,7 @@
 
 ## 🏗 7. 构建镜像
 
-- **Docker：**`docker build -t xxx .`
+- **Docker：**`docker build -t xxx .`（参见 [[git基础操作|Git 工作流]] 配合 CI/CD）
 - **Compose：**`docker compose build` → 一次构建所有服务镜像
 
 ------
@@ -85,7 +91,16 @@
 
 > **Docker 管单兵，Docker Compose 管团队。**  
 >  Docker 是容器命令工具，Compose 是多容器项目的编排与管理工具。
+>
+> 对于更复杂的容器编排场景，可参考 [[Kubernetes知识梳理|Kubernetes]] 的编排能力。
 
 ------
 
 如果你愿意，我还能帮你做一份 **Docker / Docker Compose 命令速查表（Cheat Sheet）**，或者把你现在的 Docker 命令转换成 Compose 文件。
+
+## 相关笔记
+
+- [[Kubernetes知识梳理]] — 容器编排对比（Docker Compose vs Kubernetes）
+- [[Kubernetes组件详细解析]] — K8s 调度与编排机制
+- [[Redis 知识体系全景总结]] — 容器化 Redis 部署场景
+- [[git基础操作]] — 开发工作流与容器化

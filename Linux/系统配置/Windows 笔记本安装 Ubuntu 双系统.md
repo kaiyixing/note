@@ -1,6 +1,15 @@
+---
+title: Windows 笔记本安装 Ubuntu 双系统（AMD+英伟达只能开混合模式，不然笔记本屏幕可能会花屏，外接显示器没问题）
+tags:
+  - Linux/安装
+  - Linux
+---
+
 # Windows 笔记本安装 Ubuntu 双系统（AMD+英伟达只能开混合模式，不然笔记本屏幕可能会花屏，外接显示器没问题）
 
 记录给 Windows 笔记本加装 Ubuntu 双系统的完整流程。
+
+> 📎 **相关笔记：** [[Linux 故障排查实操指南（详细步骤）]] · [[Linux 系统核心组件配置文件速查表]] · [[Linux命令手册_第1-6章]] · [[git基础操作]]
 
 ---
 
@@ -276,7 +285,7 @@ echo "export XMODIFIERS=@im=fcitx5" >> ~/.bashrc
 
 ```bash
 # 基础工具
-sudo apt install -y git curl wget htop net-tools openssh-server
+sudo apt install -y [[基础工具/Git/git基础操作|git]] curl wget htop net-tools openssh-server
 
 # 开发工具（按需）
 sudo apt install -y build-essential dkms
@@ -393,6 +402,16 @@ Windows 大版本更新有时会覆盖 MBR/EFI 引导，导致直接进 Windows 
 
 用 EasyUEFI 加回 Ubuntu 引导项，或用 Live USB 修复 GRUB（见 Q2）。
 
+
+---
+
+## 相关笔记
+
+- [[Linux/系统配置/Linux 系统核心组件配置文件速查表|Linux 系统核心组件配置文件速查表]] - Ubuntu 安装后的系统配置参考
+- [[Linux/系统排障/Linux 故障排查实操指南（详细步骤）|Linux 故障排查实操指南]] - 安装及使用中的故障排查方法
+- [[基础工具/Git/git基础操作|Git 基础操作]] - 装后必装工具
+- [[网络/TCP-IP详解/路由与交换的核心原理及区别|路由与交换的核心原理]] - 网络基础知识补充
+- [[Linux/命令手册/Linux命令手册_第1-6章|Linux 命令手册]] - 系统安装与运维必备命令
 
 ---
 

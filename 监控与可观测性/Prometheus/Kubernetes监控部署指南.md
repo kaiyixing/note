@@ -1,3 +1,10 @@
+---
+title: Kubernetes Prometheus 监控部署指南
+tags:
+  - 监控/prometheus
+  - 容器/k8s/监控
+---
+
 # Kubernetes Prometheus 监控部署指南
 
 ## 一、环境说明
@@ -12,7 +19,7 @@
 
 ### 1.2 软件版本
 
-- Kubernetes: v1.28.15
+- [[Kubernetes知识梳理|Kubernetes]]: v1.28.15
 - Containerd: 2.2.2
 - Helm: 3.20.2
 
@@ -148,6 +155,8 @@ kube-state-metrics:
 
 ### 4.4 执行安装
 
+完整架构说明请参考 [[监控系统详解（Prometheus-Grafana）]]。
+
 ```bash
 helm install prometheus prometheus-community/kube-prometheus-stack \
   -n monitoring \
@@ -252,7 +261,7 @@ kubectl delete namespace monitoring
 
 ## 八、后续配置
 
-1. **Grafana 配置**:
+1. **[[监控系统详解（Prometheus-Grafana）|Grafana 配置]]**:
    - 登录 Grafana (http://<IP>:30090)
    - 添加 Prometheus 数据源: http://prometheus-kube-prometheus-prometheus:9090
    - 导入 Dashboard (ID: 6417 - Kubernetes cluster monitoring)
@@ -262,6 +271,16 @@ kubectl delete namespace monitoring
    - 在 Alertmanager 中配置通知渠道
 
 ---
+
+## 相关笔记
+
+- [[监控系统详解（Prometheus-Grafana）]] — Prometheus + Grafana 监控体系详解
+- [[Prometheus数据抓取流程图]] — 数据抓取流程可视化
+- [[组件协作与配置位置详解]] — 组件协作与 K8s 配置位置
+- [[配置文件存放位置]] — K8s 中配置文件存放位置
+- [[Kubernetes知识梳理]] — Kubernetes 基础知识
+- [[Kubernetes组件详细解析]] — Kubernetes 核心组件详解
+- [[Linux系统资源紧张排查学习指南]] — 系统资源排查与监控
 
 **文档版本**: v1.0  
 **创建时间**: 2026-04-14  

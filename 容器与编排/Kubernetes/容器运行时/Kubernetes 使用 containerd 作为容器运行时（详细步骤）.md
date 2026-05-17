@@ -1,6 +1,12 @@
+---
+title: Kubernetes 使用 containerd 作为容器运行时（详细步骤）
+tags:
+  - "#容器/k8s/运行时"
+---
+
 # Kubernetes 使用 containerd 作为容器运行时（详细步骤）
 
-这是一个非常好的选择！Kubernetes 从 1.24 版本开始已经移除了 Docker shim，**containerd 是当前生产环境的标准选择**。
+这是一个非常好的选择！Kubernetes 从 1.24 版本开始已经移除了 Docker shim，**containerd 是当前生产环境的标准选择**。关于各组件的详细说明，参见 [[容器与编排/Kubernetes/基础知识/Kubernetes组件详细解析|Kubernetes组件详细解析]]。
 
 ------
 
@@ -328,6 +334,8 @@ kubectl get nodes
 
 ## 🔴 步骤 5：安装网络插件 CNI
 
+网络插件的详细对比与配置，参见 [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解（Calico-Flannel）|网络插件详解]]。
+
 ```bash
 # 方案 1：Flannel（简单）
 kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
@@ -335,6 +343,8 @@ kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Doc
 # 方案 2：Calico（推荐，功能更强）
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/tigera-operator.yaml
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/custom-resources.yaml
+
+# 关于 CNI 网络插件的详细对比和配置，参见 [[../../Ingress与网络策略/网络插件详解（Calico-Flannel）|网络插件详解]]
 
 # 验证 Pod 运行
 kubectl get pods -n kube-system
@@ -379,7 +389,7 @@ sudo crictl pods
 # 7.4 查看 containerd 镜像
 sudo crictl images
 
-# 7.5 部署测试应用
+# 7.5 部署测试应用（参见 [[容器与编排/Kubernetes/部署与更新/k8s滚动更新|k8s滚动更新]]）
 kubectl create deployment nginx --image=nginx
 kubectl expose deployment nginx --port=80 --type=NodePort
 kubectl get svc
@@ -709,4 +719,17 @@ crictl exec 进入容器。遇到过 cgroup 不匹配导致 Pod 无法启动，
 
 ------
 
-使用 containerd 后，你的技术栈会更贴近当前生产环境，面试时也会更有竞争力！
+## 相关笔记
+
+- [[容器与编排/Kubernetes/基础知识/Kubernetes组件详细解析|Kubernetes组件详细解析]] — kubelet、kube-proxy 等组件详解
+- [[容器与编排/Kubernetes/基础知识/Kubernetes知识梳理|Kubernetes知识梳理]] — 整体架构与部署流程
+- [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解（Calico-Flannel）|网络插件详解]] — CNI 网络插件选择
+- [[容器与编排/Kubernetes/部署与更新/k8s滚动更新|k8s 滚动更新]] — Deployment 滚动更新操作
+- [[容器与编排/Kubernetes/Helm与包管理/Helm包管理详解|Helm 包管理详解]] — Helm Chart 编排容器运行时
+- [[容器与编排/Kubernetes/CI-CD与集成/CI-CD集成详解|CI/CD 集成详解]] — 自动化部署与镜像拉取
+- [[容器与编排/Kubernetes/权限与安全/RBAC权限管理详解|RBAC 权限管理详解]] — 容器运行时 ServiceAccount 权限
+- [[监控与可观测性/Prometheus/Kubernetes监控部署指南|Kubernetes 监控部署指南]] — 容器资源监控
+- [[容器与编排/Docker/Compose进阶/Docker vs Docker Compose|Docker vs Docker Compose]] — 容器技术生态对比
+- [[存储/Ceph/ceph详细架构|Ceph 分布式存储]] — 存储与容器运行时集成
+
+使用 containerd 后，你的技术栈会更贴近当前生产环境，面试时也会更有竞争力！关于 Kubernetes 组件的更多细节可参考 [[容器与编排/Kubernetes/基础知识/Kubernetes组件详细解析|Kubernetes组件详细解析]]。

@@ -1,6 +1,15 @@
+---
+title: Linux 故障排查实操指南（详细步骤）
+tags:
+  - Linux/排障
+  - Linux
+---
+
 # Linux 故障排查实操指南（详细步骤）
 
-以下是三个核心任务的完整实验手册，建议在**虚拟机环境**中操作（避免影响主机）。
+建议在**虚拟机环境**中操作（避免影响主机）。
+
+> 📎 **相关笔记：** [[Linux 系统核心组件配置文件速查表]] · [[Windows 笔记本安装 Ubuntu 双系统]] · [[Linux命令手册_第1-6章]] · [[Linux系统资源紧张排查学习指南]]
 
 ------
 
@@ -777,9 +786,17 @@ sudo logrotate -f /etc/logrotate.d/nginx  # 强制执行
 
 ## 💡 进阶建议
 
-1. **搭建监控系统**：学习 Prometheus + Grafana，把上述指标可视化
+1. **搭建监控系统**：学习 [[监控与可观测性/Prometheus/监控系统详解（Prometheus-Grafana）|Prometheus + Grafana]]，把上述指标可视化
 2. **编写自动化脚本**：把排查命令写成 shell 脚本，一键诊断
-3. **学习 Ansible**：批量管理多台服务器的故障排查
+3. **学习 [[自动化运维/Ansible/为什么选择 Ansible？|Ansible]]**：批量管理多台服务器的故障排查
 4. **考取认证**：RHCE（红帽）、CKA（K8s）都有大量实操考题
 
 完成这三个任务后，你的 Linux 实操能力会有质的飞跃，面试时也能有底气说出具体的命令和排查思路！
+
+## 相关笔记
+
+- [[Linux/系统配置/Linux 系统核心组件配置文件速查表|Linux 系统核心组件配置文件速查表]] - 故障排查中涉及的配置文件路径参考
+- [[Linux/性能调优/Linux系统资源紧张排查学习指南|Linux 系统资源紧张排查学习指南]] - 系统资源瓶颈定位
+- [[Linux/命令手册/Linux命令手册_第1-6章|Linux 命令手册]] - 常用排查命令参考
+- [[Linux/系统配置/Windows 笔记本安装 Ubuntu 双系统|Windows 笔记本安装 Ubuntu 双系统]] - Ubuntu 系统安装与基础配置
+- [[监控与可观测性/Prometheus/监控系统详解（Prometheus-Grafana）|Prometheus + Grafana 监控系统]] - 文档内 Prometheus 部署的进阶参考

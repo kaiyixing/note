@@ -1,8 +1,16 @@
+---
+title: Kubernetes 网络插件详解：Calico 与 Flannel
+tags:
+  - "#容器/k8s/网络"
+---
+
 # Kubernetes 网络插件详解：Calico 与 Flannel
 
-基于项目描述中的"配置网络插件（如 Calico 或 Flannel）以实现 Pod 网络"，以下是网络插件的详细知识：
+基于项目描述中的"配置网络插件（如 Calico 或 Flannel）以实现 Pod 网络"，以下是网络插件的详细知识。有关整体网络模型和架构参考，参见 [[容器与编排/Kubernetes/基础知识/Kubernetes知识梳理|Kubernetes知识梳理]]。
 
 ## 一、Kubernetes 网络模型
+
+网络基础原理可参考 [[网络/TCP-IP详解/路由与交换的核心原理及区别|路由与交换核心原理]]。
 
 ### 1.1 网络要求
 1. **Pod 间通信**：所有 Pod 可以不经过 NAT 直接通信
@@ -14,6 +22,8 @@
 - **容器网络接口**：标准化容器网络配置
 - **插件架构**：可插拔的网络解决方案
 - **配置格式**：JSON 格式的网络配置
+
+CNI 插件与 kubelet、kube-proxy 等组件协作实现 Pod 网络，参见 [[容器与编排/Kubernetes/基础知识/Kubernetes组件详细解析|Kubernetes组件详细解析]]。
 
 ## 二、Flannel 网络插件
 
@@ -239,6 +249,8 @@ data:
       }
     }
 ```
+
+> 关于 Flannel 部署中的 RBAC 权限配置，详见 [[../../权限与安全/RBAC权限管理详解|RBAC 权限管理详解]]。
 
 ### 2.4 优缺点
 **优点**：
@@ -525,6 +537,8 @@ kubectl get pods --show-labels
     src: "{{ role_path }}/files/calico.yml"
 ```
 
+网络插件配置可通过 [[容器与编排/Kubernetes/Helm与包管理/Helm包管理详解|Helm Chart]] 进行版本化管理和自动化部署，并与 [[容器与编排/Kubernetes/CI-CD与集成/CI-CD集成详解|CI/CD 流水线]] 集成实现网络基础设施即代码。
+
 ### 6.2 Helm 网络插件部署
 ```yaml
 # values-flannel.yaml
@@ -604,4 +618,17 @@ spec:
 
 ---
 
-**关键要点**：选择网络插件需根据实际需求，Flannel 适合简单场景，Calico 适合需要网络策略的生产环境。部署后需进行充分的测试和监控。
+## 相关笔记
+
+- [[容器与编排/Kubernetes/基础知识/Kubernetes知识梳理|Kubernetes知识梳理]] — 网络插件章节概述
+- [[容器与编排/Kubernetes/基础知识/Kubernetes组件详细解析|Kubernetes组件详细解析]] — CNI 插件与 kube-proxy 详解
+- [[容器与编排/Kubernetes/容器运行时/Kubernetes 使用 containerd 作为容器运行时（详细步骤）|containerd 容器运行时]] — 网络插件与容器运行时配合
+- [[网络/TCP-IP详解/路由与交换的核心原理及区别|路由与交换核心原理]] — 网络基础原理
+- [[容器与编排/Docker/Compose进阶/Docker vs Docker Compose|Docker vs Docker Compose]] — 容器网络对比
+- [[容器与编排/Kubernetes/Helm与包管理/Helm包管理详解|Helm 包管理详解]] — Helm 部署网络插件
+- [[容器与编排/Kubernetes/CI-CD与集成/CI-CD集成详解|CI/CD 集成详解]] — 网络基础设施即代码
+- [[容器与编排/Kubernetes/权限与安全/RBAC权限管理详解|RBAC 权限管理详解]] — 网络插件 RBAC 权限
+- [[容器与编排/Kubernetes/部署与更新/k8s滚动更新|k8s 滚动更新]] — 网络更新与发布策略
+- [[监控与可观测性/Prometheus/Kubernetes监控部署指南|Kubernetes 监控部署指南]] — 网络性能监控
+
+**关键要点**：选择网络插件需根据实际需求，Flannel 适合简单场景，Calico 适合需要网络策略的生产环境。部署后需进行充分的测试和监控。网络基础知识可参考 [[网络/TCP-IP详解/路由与交换的核心原理及区别|路由与交换的核心原理及区别]]。网络插件的 RBAC 权限配置详见 [[容器与编排/Kubernetes/权限与安全/RBAC权限管理详解|RBAC 权限管理详解]]，网络更新期间的应用发布策略参考 [[容器与编排/Kubernetes/部署与更新/k8s滚动更新|k8s 滚动更新]]。

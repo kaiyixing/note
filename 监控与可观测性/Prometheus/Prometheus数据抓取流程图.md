@@ -1,4 +1,12 @@
+---
+title: Prometheus 数据抓取流程图
+tags:
+  - 监控/prometheus
+---
+
 # Prometheus 数据抓取流程图
+
+部署与配置详情请参考 [[Kubernetes监控部署指南]]。
 
 ## 整体架构
 
@@ -95,6 +103,8 @@
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
+完整监控体系详见 [[监控系统详解（Prometheus-Grafana）]]。
+
 ### 第四步：可视化展示 (Grafana)
 
 ```
@@ -126,3 +136,12 @@
 - **Prometheus**: http://192.168.233.10:30900
 - **Grafana**: http://192.168.233.10:30090 (admin/admin123)
 - **Alertmanager**: http://192.168.233.10:30901
+
+## 相关笔记
+
+- [[Kubernetes监控部署指南]] — Kubernetes Prometheus 部署指南
+- [[监控系统详解（Prometheus-Grafana）]] — 监控系统体系详解
+- [[组件协作与配置位置详解]] — 组件协作与配置位置
+- [[配置文件存放位置]] — K8s 中配置文件存放位置
+- [[Kubernetes知识梳理]] — Kubernetes 基础知识
+- [[Linux系统资源紧张排查学习指南]] — 系统资源排查与监控
