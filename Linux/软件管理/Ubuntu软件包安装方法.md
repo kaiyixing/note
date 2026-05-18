@@ -14,38 +14,38 @@ tags:
 
 ## 一、.deb 包
 
-Debian/Ubuntu 的標準軟件包格式，類似 Windows 的 `.exe`。
+Debian/Ubuntu 的标准软件包格式，类似 Windows 的 `.exe`。
 
-### 1.1 `dpkg` 安裝
+### 1.1 `dpkg` 安装
 
 ```bash
-# 安裝
+# 安装
 sudo dpkg -i package.deb
 
-# 卸載
+# 卸载
 sudo dpkg -r package_name
 
-# 查看已安裝
+# 查看已安装
 dpkg -l | grep package_name
 ```
 
-> ⚠️ `dpkg` **不會自動解決依賴**，缺依賴時會報錯。此時執行：
+> ⚠️ `dpkg` **不会自动解决依赖**，缺依赖时会报错。此时执行：
 
 ```bash
 sudo apt install -f
 ```
 
-### 1.2 `apt` 安裝（推薦）
+### 1.2 `apt` 安装（推荐）
 
 ```bash
 # 本地 .deb 也支持
 sudo apt install ./package.deb
 
-# 自動解決依賴並安裝
+# 自动解决依赖并安装
 sudo apt install -f
 ```
 
-### 1.3 Gdebi（圖形化依賴解析）
+### 1.3 Gdebi（图形化依赖解析）
 
 ```bash
 sudo apt install gdebi
@@ -56,33 +56,33 @@ sudo gdebi package.deb
 
 ## 二、AppImage
 
-免安裝、免解壓、單文件運行，類似 macOS 的 `.app`。
+免安装、免解压、单文件运行，类似 macOS 的 `.app`。
 
 ### 使用方法
 
 ```bash
-# 1. 下載 .AppImage 文件
+# 1. 下载 .AppImage 文件
 wget https://example.com/app.AppImage
 
-# 2. 賦予執行權限
+# 2. 赋予执行权限
 chmod +x app.AppImage
 
-# 3. 運行
+# 3. 运行
 ./app.AppImage
 ```
 
-### 整合到系統（可選）
+### 整合到系统（可选）
 
 ```bash
-# 移到自定義路徑
+# 移到自定义路径
 mkdir -p ~/Applications
 mv app.AppImage ~/Applications/
 
-# 或者創建桌面快捷方式
+# 或者创建桌面快捷方式
 ln -s ~/Applications/app.AppImage ~/.local/share/applications/
 ```
 
-> 💡 可用 **AppImageLauncher** 自動整合到系統菜單：
+> 💡 可用 **AppImageLauncher** 自动整合到系统菜单：
 > ```bash
 > sudo add-apt-repository ppa:appimagelauncher-team/stable
 > sudo apt update && sudo apt install appimagelauncher
@@ -90,18 +90,18 @@ ln -s ~/Applications/app.AppImage ~/.local/share/applications/
 
 ---
 
-## 三、Snap（Ubuntu 默認）
+## 三、Snap（Ubuntu 默认）
 
-Ubuntu 自帶 Snap 支持。
+Ubuntu 自带 Snap 支持。
 
 ```bash
 # 查找
 snap find package_name
 
-# 安裝
+# 安装
 sudo snap install package_name
 
-# 卸載
+# 卸载
 sudo snap remove package_name
 
 # 更新
@@ -112,29 +112,29 @@ sudo snap refresh
 
 ## 四、Flatpak
 
-跨發行版容器化方案。
+跨发行版容器化方案。
 
 ```bash
-# 安裝 Flatpak
+# 安装 Flatpak
 sudo apt install flatpak
 
-# 添加 Flathub 倉庫
+# 添加 Flathub 仓库
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
-# 安裝
+# 安装
 flatpak install flathub org.package.Name
 ```
 
 ---
 
-## 五、對比總結
+## 五、对比总结
 
-| 格式 | 依賴隔離 | 沙箱 | 跨發行版 | 特點 |
+| 格式 | 依赖隔离 | 沙箱 | 跨发行版 | 特点 |
 |------|---------|------|---------|------|
-| `.deb` | ❌ | ❌ | ❌ | 傳統包格式，依賴管理需 apt |
-| AppImage | ✅ | ❌ | ✅ | 單文件綠色運行，無需安裝 |
-| Snap | ✅ | ✅ | ✅ | Ubuntu 原生，自動更新 |
-| Flatpak | ✅ | ✅ | ✅ | 專注桌面應用，沙箱隔離強 |
+| `.deb` | ❌ | ❌ | ❌ | 传统包格式，依赖管理需 apt |
+| AppImage | ✅ | ❌ | ✅ | 单文件绿色运行，无需安装 |
+| Snap | ✅ | ✅ | ✅ | Ubuntu 原生，自动更新 |
+| Flatpak | ✅ | ✅ | ✅ | 专注桌面应用，沙箱隔离强 |
 
 ---
 
