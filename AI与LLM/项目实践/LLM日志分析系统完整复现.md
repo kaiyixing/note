@@ -227,7 +227,7 @@ if uploaded_file:
 ollama list || ollama serve &
 
 # 2. 启动应用
-streamlit run app.py
+uv run streamlit run app.py
 
 # 3. 测试问题
 # - "最近一个小时有哪些 ERROR 级别的日志？"
