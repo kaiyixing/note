@@ -21,12 +21,12 @@ tags:
 
 ## 一、网络相关（回顾版）
 
-|配置文件路径|核心作用|关键配置项/示例|
-|---|---|---|
-|`/etc/sysconfig/network-scripts/ifcfg-<网卡名>`|网卡核心配置（IP/网关/开机自启）|`IPADDR=192.168.233.151`, `ONBOOT=yes`|
-|`/etc/hostname`|系统主机名|`master`|
-|`/etc/hosts`|本地域名-IP 映射|`192.168.233.151 master`|
-|`/etc/resolv.conf`|DNS 服务器地址|`nameserver 8.8.8.8`|
+| 配置文件路径                                       | 核心作用               | 关键配置项/示例                               |
+| -------------------------------------------- | ------------------ | -------------------------------------- |
+| `/etc/sysconfig/network-scripts/ifcfg-<网卡名>` | 网卡核心配置（IP/网关/开机自启） | `IPADDR=192.168.233.151`, `ONBOOT=yes` |
+| `/etc/hostname`                              | 系统主机名              | `master`                               |
+| `/etc/hosts`                                 | 本地域名-IP 映射         | `192.168.233.151 master`               |
+| `/etc/resolv.conf`                           | DNS 服务器地址          | `nameserver 8.8.8.8`                   |
 |`/etc/sysctl.conf`|内核网络参数|`net.ipv4.ip_forward=1`|
 ---
 
