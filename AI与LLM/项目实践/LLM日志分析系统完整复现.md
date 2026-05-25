@@ -54,6 +54,9 @@ source venv/bin/activate
 
 # 5. 安装依赖（注意：需额外装 langchain-chroma）
 pip install streamlit langchain langchain-ollama langchain-community chromadb langchain-chroma
+
+
+pip install streamlit langchain langchain-ollama langchain-community chromadb langchain-chroma -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 > 注意：原方案 `pip install` 中缺少 `langchain-chroma`，`app.py` 中的 `from langchain_chroma import Chroma` 会报错，必须补装。
