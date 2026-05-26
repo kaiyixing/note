@@ -15,8 +15,8 @@ tags:
 ### 1.1 网络要求
 1. **Pod 间通信**：所有 Pod 可以不经过 NAT 直接通信
 2. **节点间通信**：节点上的 Pod 可以与所有节点上的 Pod 通信
-3. **Pod 与 Service**：Pod 可以不经过 NAT 与 Service 通信
-4. **外部访问**：外部客户端可以不经过 NAT 访问 Service
+3. **Pod 与 Service**：Pod 通过 kube-proxy 的 DNAT 转换访问 Service（**存在 NAT**）
+4. **外部访问**：外部客户端无法直接访问 Service，需通过 NodePort/LoadBalancer/Ingress 暴露
 
 ### 1.2 CNI 标准
 - **容器网络接口**：标准化容器网络配置
@@ -29,7 +29,7 @@ CNI 插件与 kubelet、kube-proxy 等组件协作实现 Pod 网络，参见 [[�
 
 ### 2.1 架构概述
 - **简单 overlay 网络**：使用 VXLAN 或 host-gw
-- **中央 etcd 存储**：存储网络配置
+- **子网分配**：默认通过 Kubernetes API（`--kube-subnet-mgr`）管理子网分配，旧版使用 etcd
 - **每个节点代理**：flanneld 守护进程
 
 ### 2.2 网络模式
@@ -452,8 +452,13 @@ ip route show | grep flannel
 # 查看 flannel 日志
 kubectl logs -n kube-flannel -l app=flannel
 
-# 检查 etcd 网络配置
-etcdctl get /coreos.com/network/config
+# 检查 Flannel 网络配置（kube-subnet-mgr 模式）
+kubectl get configmap -n kube-flannel kube-flannel-cfg -o yaml
+
+# 检查各节点 Pod CIDR 分配
+kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.podCIDR}{"\n"}{end}'
+
+# etcd 模式（旧版）：etcdctl get /coreos.com/network/config
 ```
 
 ### 5.3 Calico 特定排查
