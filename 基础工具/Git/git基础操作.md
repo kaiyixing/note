@@ -13,6 +13,9 @@ tags:
 ```bash
 git config --global user.name "Your Name"      # 配置用户名
 git config --global user.email "email@example.com" # 配置邮箱
+git config --global init.defaultBranch main    # 设置默认分支名为 main（Git 2.28+）
+git config --global core.editor "code --wait"  # 设置默认编辑器（以 VS Code 为例）
+git config --global credential.helper store    # 缓存凭据，避免每次 push 输密码
 git config --list                              # 查看所有配置
 git init                                       # 初始化本地仓库
 git clone <仓库URL>                            # 克隆远程仓库（含历史）
@@ -75,21 +78,32 @@ git push -u origin <分支>                      # 首次推送并关联上游�
 | 命令                       | 作用                    | 安全提示                     |
 | -------------------------- | ----------------------- | ---------------------------- |
 | `git restore <文件>`       | 丢弃工作区修改          | 未暂存内容将丢失             |
-| `git reset --soft HEAD~1`  | 撤回提交，保留暂存区    | 安全                         |
+| `git reset --soft HEAD~1`  | 撤回提交，保留暂存区    | 安全（仅限本地未推送提交）   |
 | `git reset --mixed HEAD~1` | 撤回提交+暂存区（默认） | 慎用                         |
 | `git reset --hard HEAD~1`  | 彻底回退（含工作区）    | **危险！未提交内容永久丢失** |
-| `git revert <commit-id>`   | 新增“反向提交”撤销更改  | **安全！适用于已推送提交**   |
-| `git stash` / `pop`        | 临时保存/恢复工作进度   | 避免切换分支时冲突           |
+| `git revert <commit-id>`   | 新增"反向提交"撤销更改  | **安全！适用于已推送提交**   |
 
 ------
 
 ### 🧰 七、其他高频命令
 
 ```bash
-git tag v1.0.0                                 # 创建轻量标签
-git stash list / apply / drop                  # 管理暂存区
-git clean -fd                                  # 删除未跟踪文件（-n 先预览！）
-git bisect start                               # 二分法定位 bug（高级）
+git tag -a v1.0.0 -m "Release v1.0.0"          # 创建附注标签（推荐）
+git stash                                      # 临时保存工作区修改
+git stash push -u                              # 临时保存（连带未跟踪文件）
+git stash list / apply / drop / pop            # 管理暂存列表
+git clean -fd                                  # 删除未跟踪文件（先用 -n 预览！）
+git cherry-pick <commit-id>                    # 将指定提交应用到当前分支
+git branch -a                                  # 查看所有分支（含远程分支）
+git fetch --prune                              # 拉取并清理已删除的远程分支记录
+git merge --no-ff <分支>                       # 合并并强制生成合并提交
+git push --force-with-lease <远程> <分支>      # 安全强制推送（替代 -f）
+# bisect 二分法定位 bug（完整流程）：
+#   git bisect start     → 开始
+#   git bisect bad       → 标记当前提交有问题
+#   git bisect good <ID> → 标记某历史提交没问题
+#   测试后反复标记 bad/good → 定位首个有问题的提交
+#   git bisect reset     → 结束 bisect
 ```
 
 ------
@@ -106,7 +120,7 @@ git bisect start                               # 二分法定位 bug（高级）
    📚 《Pro Git》中文版（免费在线）｜ 🌐 https://git-scm.com/book/zh/v2
 6. **Git 与 CI/CD**：Git 是 [[容器与编排/Kubernetes/CI-CD与集成/CI-CD集成详解|CI/CD 管道]] 的版本控制基础，代码提交自动触发构建、测试与部署流程。
 
-> ✅ **安全第一**：对 `reset --hard`、`clean`、`push -f` 等危险操作，务必先确认影响范围！
+> ✅ **安全第一**：对 `reset --hard`、`clean`、`push -f` 等危险操作，务必先确认影响范围！需要用 `push -f` 时优先用 `push --force-with-lease`，后者会检查远端是否有新提交，更安全。
 > 💬 遇到具体问题（如"如何回退已推送的提交？"），欢迎补充细节，我会提供针对性方案！ 😊
 
 假设你要创建一个名为 `my-website` 的项目。
@@ -138,13 +152,15 @@ git commit -m "feat: init project, add README"
 
 # 7. 【远程】此时你应该去 GitHub/GitLab 创建一个空仓库
 #     假设仓库地址是：https://github.com/yourname/my-website.git
-#     注意：不要勾选“Initialize this repository with a README” (因为我们本地已经有了)
+#     注意：不要勾选"Initialize this repository with a README" (因为我们本地已经有了)
 
 # 8. 【本地】关联远程仓库，并把远程仓库命名为 'origin'
-#     (把下面的 URL 换成你自己的真实地址)
-git remote add origin https://github.com/yourname/my-website.git
-
-# 注意格式变成了 git@域名:用户名/仓库名.git
+#     （两种方式二选一，把 URL 换成你自己的）
+# HTTPS 方式：
+#   git remote add origin https://github.com/yourname/my-website.git
+# SSH 方式（推荐，需先配置 SSH Key）：
+#   1. ssh-keygen -t ed25519 -C "your.email@example.com"
+#   2. 将 ~/.ssh/id_ed25519.pub 添加到 GitHub/GitLab 的 SSH Keys 中
 git remote add origin git@github.com:yourname/my-website.git
 
 
