@@ -178,13 +178,17 @@ Win + X → 磁盘管理
 
 分区删了，但 EFI 分区里的 Ubuntu 引导文件还在。不清也能装，会被覆盖，但清一下更干净。
 
-Windows 管理员运行 PowerShell：
+> 📄 详细操作（含挂载失败备选方案、验证方法、BIOS 启动项清理）见：[[清理 EFI 分区中的旧 Ubuntu 引导]]
 
-```powershell
-mountvol Z: /s           # 挂载 EFI 分区
-rm -r Z:\EFI\ubuntu      # 删旧的 Ubuntu 引导
-mountvol Z: /d           # 卸载
+简版（管理员 CMD）：
+
+```cmd
+mountvol Z: /s
+rmdir /s Z:\EFI\ubuntu
+mountvol Z: /d
 ```
+
+> ⚠️ 注意：要用 **CMD（命令提示符）** 以管理员身份运行，不是 PowerShell。如果在 diskpart 界面里，先打 `exit` 退出来再删。
 
 **第三步：正常安装新 Ubuntu**
 
