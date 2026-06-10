@@ -917,8 +917,8 @@ kubectl exec -it <pod-name> -n <namespace> -- curl <service-url>
 - [[容器与编排/Kubernetes/权限与安全/RBAC权限管理详解|RBAC 权限管理详解]] — CI/CD 工具 RBAC 权限配置
 - [[监控与可观测性/Prometheus/Kubernetes监控部署指南|Kubernetes 监控部署指南]] — CI/CD 流水线监控
 - [[容器与编排/Kubernetes/基础知识/Kubernetes组件详细解析|Kubernetes组件详细解析]] — CI/CD 涉及的核心组件
-- [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解（Calico-Flannel）|网络插件详解]] — 网络策略自动化配置
-- [[容器与编排/Kubernetes/容器运行时/Kubernetes 使用 containerd 作为容器运行时（详细步骤）|containerd 容器运行时]] — 容器镜像拉取与运行
+- [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解-Calico-Flannel|网络插件详解]] — 网络策略自动化配置
+- [[容器与编排/Kubernetes/容器运行时/Kubernetes-containerd容器运行时|containerd 容器运行时]] — 容器镜像拉取与运行
 - [[容器与编排/Docker/Compose进阶/Docker vs Docker Compose|Docker vs Docker Compose]] — 容器技术生态
 
 **关键要点**：Kubernetes CI/CD 需要结合合适的工具链，实现从代码到生产的全流程自动化。GitOps 模式将配置存储在 Git 中，确保环境一致性和可追溯性。部署和包管理相关内容可参考 [[容器与编排/Kubernetes/部署与更新/k8s滚动更新|k8s滚动更新]] 和 [[容器与编排/Kubernetes/Helm与包管理/Helm包管理详解|Helm包管理详解]]。CI/CD 工具本身的 RBAC 权限配置详见 [[容器与编排/Kubernetes/权限与安全/RBAC权限管理详解|RBAC 权限管理详解]]。

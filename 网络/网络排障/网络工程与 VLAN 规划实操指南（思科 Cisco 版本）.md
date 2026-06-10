@@ -972,7 +972,7 @@ ip routing 没启用，配置后解决。
 
 ## 📚 扩展学习建议
 
-1. **[[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解（Calico-Flannel）|动态路由协议]]**：学习 OSPF 配置（思科：router ospf 1）
+1. **[[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解-Calico-Flannel|动态路由协议]]**：学习 OSPF 配置（思科：router ospf 1）
 2. **VLAN 间 ACL**：学习如何限制部门间访问（思科：ip access-list）
 3. **HSRP/VRRP 冗余**：学习网关冗余配置（思科：standby）
 4. **DHCP 服务**：学习自动分配 IP 地址（思科：ip dhcp pool）
@@ -984,7 +984,7 @@ ip routing 没启用，配置后解决。
 
 - [[网络/TCP-IP详解/路由与交换的核心原理及区别]] — 路由与交换核心原理对比
 - [[网络/学习笔记/秦的网络]] — 网络分层模型与基础知识
-- [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解（Calico-Flannel）]] — K8s 网络插件与 overlay 网络
+- [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解-Calico-Flannel]] — K8s 网络插件与 overlay 网络
 - [[Linux/系统配置/Linux 系统核心组件配置文件速查表]] — Linux 网络核心配置文件
 - [[面试准备/面经/大厂运维运维开发面试高频知识点总结]] — 网络知识面试考点
 

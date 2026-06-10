@@ -1,0 +1,22 @@
+{
+  "id": "conv-1781097675524-9yytgi9zs",
+  "providerId": "claude",
+  "title": "Organize, fix links and restructure Obsidian vault",
+  "titleGenerationStatus": "success",
+  "createdAt": 1781097675527,
+  "updatedAt": 1781097834500,
+  "lastResponseAt": 1781097834500,
+  "sessionId": "b4900190-53ff-4d6d-be1b-5e7faa054f77",
+  "providerState": {
+    "providerSessionId": "b4900190-53ff-4d6d-be1b-5e7faa054f77"
+  },
+  "usage": {
+    "model": "sonnet[1m]",
+    "inputTokens": 2622,
+    "cacheCreationInputTokens": 0,
+    "cacheReadInputTokens": 61056,
+    "contextWindow": 1000000,
+    "contextTokens": 63678,
+    "percentage": 6
+  }
+}

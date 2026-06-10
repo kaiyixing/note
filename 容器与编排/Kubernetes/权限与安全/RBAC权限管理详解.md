@@ -422,8 +422,8 @@ rbac:
 - [[容器与编排/Kubernetes/Helm与包管理/Helm包管理详解|Helm 包管理详解]] — Helm Chart 中的 RBAC 集成
 - [[容器与编排/Kubernetes/CI-CD与集成/CI-CD集成详解|CI/CD 集成详解]] — CI/CD 工具 RBAC 配置
 - [[容器与编排/Kubernetes/部署与更新/k8s滚动更新|k8s 滚动更新]] — 部署操作的 RBAC 权限需求
-- [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解（Calico-Flannel）|网络插件详解]] — 网络组件 RBAC 权限配置
-- [[容器与编排/Kubernetes/容器运行时/Kubernetes 使用 containerd 作为容器运行时（详细步骤）|containerd 容器运行时]] — 容器运行时的服务账户配置
+- [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解-Calico-Flannel|网络插件详解]] — 网络组件 RBAC 权限配置
+- [[容器与编排/Kubernetes/容器运行时/Kubernetes-containerd容器运行时|containerd 容器运行时]] — 容器运行时的服务账户配置
 - [[容器与编排/Docker/Compose进阶/Docker vs Docker Compose|Docker vs Docker Compose]] — 容器技术生态对比
 - [[监控与可观测性/Prometheus/Kubernetes监控部署指南|Kubernetes 监控部署指南]] — 审计日志与监控集成
 - [[面试准备/面经/面试问答|面试问答]] — RBAC 面试常见问题

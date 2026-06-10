@@ -627,7 +627,7 @@ spec:
 
 - [[容器与编排/Kubernetes/基础知识/Kubernetes知识梳理|Kubernetes知识梳理]] — 网络插件章节概述
 - [[容器与编排/Kubernetes/基础知识/Kubernetes组件详细解析|Kubernetes组件详细解析]] — CNI 插件与 kube-proxy 详解
-- [[容器与编排/Kubernetes/容器运行时/Kubernetes 使用 containerd 作为容器运行时（详细步骤）|containerd 容器运行时]] — 网络插件与容器运行时配合
+- [[容器与编排/Kubernetes/容器运行时/Kubernetes-containerd容器运行时|containerd 容器运行时]] — 网络插件与容器运行时配合
 - [[网络/TCP-IP详解/路由与交换的核心原理及区别|路由与交换核心原理]] — 网络基础原理
 - [[容器与编排/Docker/Compose进阶/Docker vs Docker Compose|Docker vs Docker Compose]] — 容器网络对比
 - [[容器与编排/Kubernetes/Helm与包管理/Helm包管理详解|Helm 包管理详解]] — Helm 部署网络插件

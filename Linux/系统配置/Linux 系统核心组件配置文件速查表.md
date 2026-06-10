@@ -2,12 +2,6 @@
 title: Linux 系统核心组件配置文件速查表（RedHat/CentOS 系）
 tags:
   - Linux/配置
----
-
-﻿---
-title: Linux 系统核心组件配置文件速查表（RedHat/CentOS 系）
-tags:
-  - Linux/配置
   - Linux
 ---
 
@@ -99,6 +93,6 @@ tags:
 
 - [[Linux/系统排障/Linux 故障排查实操指南（详细步骤）|Linux 故障排查实操指南]] - 配置文件对应的故障排查场景
 - [[Linux/命令手册/Linux命令手册_第1-6章|Linux 命令手册]] - 与配置文件对应的操作命令
-- [[自动化运维/Ansible/为什么选择 Ansible？|Ansible 自动化运维]] - 基于配置文件的自动化管理
+- [[自动化运维/Ansible/为什么选择 Ansible？  ansible的特点优势|Ansible 自动化运维]] - 基于配置文件的自动化管理
 - [[Linux/系统配置/Windows 笔记本安装 Ubuntu 双系统|Windows 笔记本安装 Ubuntu 双系统]] - Ubuntu 安装后的配置参考
 - [[网络/网络排障/网络工程与 VLAN 规划实操指南（思科 Cisco 版本）|网络工程与 VLAN 规划]] - 网络配置场景扩展

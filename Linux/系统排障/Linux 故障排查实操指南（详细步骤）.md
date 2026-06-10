@@ -789,7 +789,7 @@ sudo logrotate -f /etc/logrotate.d/nginx  # 强制执行
 
 1. **搭建监控系统**：学习 [[监控与可观测性/Prometheus/监控系统详解（Prometheus-Grafana）|Prometheus + Grafana]]，把上述指标可视化
 2. **编写自动化脚本**：把排查命令写成 shell 脚本，一键诊断
-3. **学习 [[自动化运维/Ansible/为什么选择 Ansible？|Ansible]]**：批量管理多台服务器的故障排查
+3. **学习 [[自动化运维/Ansible/为什么选择 Ansible？  ansible的特点优势|Ansible]]**：批量管理多台服务器的故障排查
 4. **考取认证**：RHCE（红帽）、CKA（K8s）都有大量实操考题
 
 完成这三个任务后，你的 Linux 实操能力会有质的飞跃，面试时也能有底气说出具体的命令和排查思路！

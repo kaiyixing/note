@@ -334,7 +334,7 @@ kubectl get nodes
 
 ## 🔴 步骤 5：安装网络插件 CNI
 
-网络插件的详细对比与配置，参见 [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解（Calico-Flannel）|网络插件详解]]。
+网络插件的详细对比与配置，参见 [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解-Calico-Flannel|网络插件详解]]。
 
 ```bash
 # 方案 1：Flannel（简单）
@@ -344,7 +344,7 @@ kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Doc
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/tigera-operator.yaml
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/custom-resources.yaml
 
-# 关于 CNI 网络插件的详细对比和配置，参见 [[../../Ingress与网络策略/网络插件详解（Calico-Flannel）|网络插件详解]]
+# 关于 CNI 网络插件的详细对比和配置，参见 [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解-Calico-Flannel|网络插件详解]]
 
 # 验证 Pod 运行
 kubectl get pods -n kube-system
@@ -723,7 +723,7 @@ crictl exec 进入容器。遇到过 cgroup 不匹配导致 Pod 无法启动，
 
 - [[容器与编排/Kubernetes/基础知识/Kubernetes组件详细解析|Kubernetes组件详细解析]] — kubelet、kube-proxy 等组件详解
 - [[容器与编排/Kubernetes/基础知识/Kubernetes知识梳理|Kubernetes知识梳理]] — 整体架构与部署流程
-- [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解（Calico-Flannel）|网络插件详解]] — CNI 网络插件选择
+- [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解-Calico-Flannel|网络插件详解]] — CNI 网络插件选择
 - [[容器与编排/Kubernetes/部署与更新/k8s滚动更新|k8s 滚动更新]] — Deployment 滚动更新操作
 - [[容器与编排/Kubernetes/Helm与包管理/Helm包管理详解|Helm 包管理详解]] — Helm Chart 编排容器运行时
 - [[容器与编排/Kubernetes/CI-CD与集成/CI-CD集成详解|CI/CD 集成详解]] — 自动化部署与镜像拉取

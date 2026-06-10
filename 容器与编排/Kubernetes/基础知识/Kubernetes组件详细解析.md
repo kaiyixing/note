@@ -131,7 +131,7 @@ ETCDCTL_API=3 etcdctl snapshot restore snapshot.db \
 ### 2.3 容器运行时
 **支持类型**：
 - **Docker**：传统选择（已弃用，通过 cri-dockerd），对比详见 [[容器与编排/Docker/Compose进阶/Docker vs Docker Compose|Docker vs Docker Compose]]
-- **[[../../容器运行时/Kubernetes 使用 containerd 作为容器运行时（详细步骤）|containerd]]**：推荐选择，CNCF 毕业项目，安装步骤详见 [[容器与编排/Kubernetes/容器运行时/Kubernetes 使用 containerd 作为容器运行时（详细步骤）|containerd 安装配置]]
+- **[[容器与编排/Kubernetes/容器运行时/Kubernetes-containerd容器运行时|containerd]]**：推荐选择，CNCF 毕业项目，安装步骤详见 [[容器与编排/Kubernetes/容器运行时/Kubernetes-containerd容器运行时|containerd 安装配置]]
 - **CRI-O**：专为 Kubernetes 设计
 
 **配置示例（containerd）**：
@@ -153,12 +153,12 @@ version = 2
 
 | 插件 | 网络模型 | 特点 | 适用场景 |
 |------|---------|------|---------|
-| **[[../../Ingress与网络策略/网络插件详解（Calico-Flannel）|Calico]]** | BGP/Overlay | 网络策略、高性能 | 生产环境、需要网络策略 |
-| **[[../../Ingress与网络策略/网络插件详解（Calico-Flannel）|Flannel]]** | Overlay | 简单、稳定 | 测试环境、简单网络 |
+| **[[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解-Calico-Flannel|Calico]]** | BGP/Overlay | 网络策略、高性能 | 生产环境、需要网络策略 |
+| **[[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解-Calico-Flannel|Flannel]]** | Overlay | 简单、稳定 | 测试环境、简单网络 |
 | **Cilium** | eBPF | 高性能、安全 | 高性能需求、安全敏感 |
 | **Weave Net** | Overlay | 简单部署、加密 | 简单部署、安全通信 |
 
-Calico 与 Flannel 的详细对比和部署，参见 [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解（Calico-Flannel）|网络插件详解]]。
+Calico 与 Flannel 的详细对比和部署，参见 [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解-Calico-Flannel|网络插件详解]]。
 
 ### 3.2 DNS 服务
 **CoreDNS**：集群 DNS 解析
@@ -300,8 +300,8 @@ kubectl port-forward <pod-name> <local-port>:<pod-port>
 ## 相关笔记
 
 - [[容器与编排/Kubernetes/基础知识/Kubernetes知识梳理|Kubernetes知识梳理]] — 整体架构与项目知识体系
-- [[容器与编排/Kubernetes/容器运行时/Kubernetes 使用 containerd 作为容器运行时（详细步骤）|containerd 容器运行时]] — 容器运行时安装与配置
-- [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解（Calico-Flannel）|网络插件详解]] — CNI 插件选择与部署
+- [[容器与编排/Kubernetes/容器运行时/Kubernetes-containerd容器运行时|containerd 容器运行时]] — 容器运行时安装与配置
+- [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解-Calico-Flannel|网络插件详解]] — CNI 插件选择与部署
 - [[容器与编排/Kubernetes/权限与安全/RBAC权限管理详解|RBAC 权限管理详解]] — 组件间鉴权与用户权限
 - [[容器与编排/Kubernetes/部署与更新/k8s滚动更新|k8s 滚动更新]] — Deployment 滚动更新机制
 - [[容器与编排/Docker/Compose进阶/Docker vs Docker Compose|Docker vs Docker Compose]] — 容器运行时技术对比

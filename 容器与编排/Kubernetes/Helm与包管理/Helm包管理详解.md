@@ -709,8 +709,8 @@ helm dependency build ./mychart
 - [[容器与编排/Kubernetes/部署与更新/k8s滚动更新|k8s 滚动更新]] — 通过 helm upgrade 触发滚动更新
 - [[容器与编排/Kubernetes/权限与安全/RBAC权限管理详解|RBAC 权限管理详解]] — Helm 与 RBAC 集成
 - [[容器与编排/Kubernetes/基础知识/Kubernetes组件详细解析|Kubernetes组件详细解析]] — API Server 与 Helm 的交互
-- [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解（Calico-Flannel）|网络插件详解]] — Helm 部署网络插件
-- [[容器与编排/Kubernetes/容器运行时/Kubernetes 使用 containerd 作为容器运行时（详细步骤）|containerd 容器运行时]] — 容器运行时与 Helm Chart
+- [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解-Calico-Flannel|网络插件详解]] — Helm 部署网络插件
+- [[容器与编排/Kubernetes/容器运行时/Kubernetes-containerd容器运行时|containerd 容器运行时]] — 容器运行时与 Helm Chart
 - [[监控与可观测性/Prometheus/Kubernetes监控部署指南|Kubernetes 监控部署指南]] — Helm 部署 Prometheus Stack
 - [[容器与编排/Docker/Compose进阶/Docker vs Docker Compose|Docker vs Docker Compose]] — 容器技术生态
 
