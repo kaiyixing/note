@@ -1,0 +1,23 @@
+{
+  "id": "conv-1781045520173-hwiam1jn3",
+  "providerId": "claude",
+  "title": "Explain the assistant's identity",
+  "titleGenerationStatus": "success",
+  "createdAt": 1781045520176,
+  "updatedAt": 1781074733225,
+  "lastResponseAt": 1781074733225,
+  "sessionId": "e3394f41-cbf3-4d92-9d42-76df9ed58ad6",
+  "providerState": {
+    "providerSessionId": "e3394f41-cbf3-4d92-9d42-76df9ed58ad6"
+  },
+  "usage": {
+    "model": "sonnet[1m]",
+    "inputTokens": 7880,
+    "cacheCreationInputTokens": 0,
+    "cacheReadInputTokens": 24192,
+    "contextWindow": 1000000,
+    "contextTokens": 32072,
+    "percentage": 3,
+    "contextWindowIsAuthoritative": true
+  }
+}
