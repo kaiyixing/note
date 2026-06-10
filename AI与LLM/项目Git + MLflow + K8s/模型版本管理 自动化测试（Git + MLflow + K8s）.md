@@ -133,11 +133,158 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)
 ```
 
-#### 3. 部署至minikube (K8s)
+#### 3. Windows 笔记本上的推荐部署方案
 
-基于你的Windows笔记本，推荐使用 `minikube` + `docker` 驱动。关键 YAML 如下：
+> 结论：在 Windows + RTX 4060 笔记本上，**不建议一开始把 Ollama 放进 K8s Pod 里跑 GPU**。更稳妥的方式是：**Ollama 在 Windows / WSL2 宿主机上直接使用显卡，K8s 只负责部署 Flask 网关、MLflow、Streamlit、Ingress 等控制与观测组件**。
 
-- **Ollama Deployment（单副本，挂载模型缓存）**
+原因是：
+
+- 普通虚拟机（VirtualBox / VMware / 普通 Hyper-V）很难直接使用笔记本独显；
+- K8s Pod 想使用 NVIDIA GPU，需要 NVIDIA Container Toolkit、K8s NVIDIA device plugin、容器运行时、WSL2 / Docker Desktop 等多层配置；
+- 对 8GB 显存的本地项目来说，强行把模型服务容器化到 K8s 里，容易把时间耗在 GPU passthrough 和 device plugin 调试上；
+- 本项目的核心展示点是 **模型版本管理、A/B 流量切分、指标采集和可视化闭环**，不是本地 GPU 调度。
+
+因此，Windows 最适合的本地架构是：
+
+```text
+Windows / WSL2 宿主机
+└── Ollama + Llama 3 8B
+    └── 使用 RTX 4060 GPU
+    └── 暴露 http://localhost:11434
+
+Docker Desktop Kubernetes / minikube / kind
+├── Flask Gateway
+│   └── 负责 v1 / v2 prompt 路由与 A/B 流量切分
+├── MLflow Tracking Server
+│   └── 记录延迟、版本、反馈等指标
+├── Streamlit Dashboard
+│   └── 展示 A/B 测试结果
+└── Ingress / Service
+```
+
+数据流变为：
+
+```text
+用户请求 → K8s Ingress → Flask Gateway → 宿主机 Ollama
+                              │
+                              ├─ v1 System Prompt
+                              └─ v2 System Prompt
+                              │
+                              └─ MLflow 记录指标 → Streamlit 看板
+```
+
+##### 3.1 Windows 原生运行 Ollama
+
+在 Windows 上安装 Ollama 后，拉取模型：
+
+```powershell
+ollama pull llama3:8b
+ollama run llama3:8b
+```
+
+确认 Ollama 服务可访问：
+
+```powershell
+curl http://localhost:11434/api/tags
+```
+
+K8s Pod 内部不能用 `localhost:11434` 访问宿主机 Ollama，因为 Pod 里的 `localhost` 指向 Pod 自己。网关应改为访问宿主机地址：
+
+```python
+OLLAMA_BASE = "http://host.docker.internal:11434/api/generate"
+```
+
+如果使用 Docker Desktop Kubernetes，`host.docker.internal` 通常可直接解析到 Windows 宿主机。
+
+##### 3.2 WSL2 运行 Ollama
+
+如果使用 WSL2，先确认 WSL2 能看到 NVIDIA GPU：
+
+```bash
+nvidia-smi
+```
+
+然后在 WSL2 中安装 Ollama：
+
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+ollama pull llama3:8b
+ollama run llama3:8b
+```
+
+这种方式比传统虚拟机更适合 Windows + NVIDIA，因为 WSL2 可以通过 NVIDIA WSL 驱动访问 GPU。但如果 K8s 运行在 Docker Desktop / minikube 中，Pod 访问 WSL2 内的 Ollama 可能还需要处理网络地址映射。为了降低复杂度，初版项目优先推荐 **Windows 原生 Ollama + K8s Pod 通过 `host.docker.internal` 调用**。
+
+##### 3.3 推荐的 Windows MVP 部署边界
+
+第一版只把这些组件放进 K8s：
+
+```text
+K8s 内部：
+- Flask Gateway
+- MLflow Tracking Server
+- Streamlit Dashboard
+- Ingress / Service
+
+K8s 外部：
+- Ollama
+- Llama 3 8B 模型权重
+- RTX 4060 GPU 推理
+```
+
+这样仍然可以完整展示：
+
+- K8s 服务部署；
+- 网关层 A/B 路由；
+- MLflow 实验与指标记录；
+- Streamlit 可视化；
+- 本地 GPU 推理；
+- 推理服务与控制服务解耦。
+
+简历 / 面试中可以这样解释：
+
+> 在 Windows + RTX 4060 本地环境中，我将推理服务与 K8s 控制面解耦：Ollama 在宿主机上直接使用 GPU 承载 Llama 3 8B，K8s 负责部署 Flask 网关、MLflow Tracking Server 和 Streamlit 看板。网关通过 `host.docker.internal` 调用宿主机推理服务，同时完成 A/B 流量切分、版本标记和指标采集。该方案避免了本地 K8s GPU passthrough 的复杂性，同时保留了 MLOps 闭环的核心能力。
+
+##### 3.4 Windows 进阶方案
+
+等 MVP 跑通后，再尝试完整 GPU Pod 方案：
+
+```text
+WSL2
+└── Docker / containerd
+    └── minikube / kind / k3d
+        └── NVIDIA Container Toolkit
+            └── NVIDIA device plugin
+                └── Ollama Pod 申请 nvidia.com/gpu: 1
+```
+
+对应 YAML 中可以保留 GPU 资源声明：
+
+```yaml
+resources:
+  limits:
+    nvidia.com/gpu: 1
+```
+
+但这应作为进阶探索，不建议作为项目第一阶段目标。
+
+#### 4. 部署至 minikube / Docker Desktop Kubernetes
+
+基于 Windows 笔记本，第一阶段推荐 K8s 内只部署网关、MLflow、Streamlit，Ollama 保持在宿主机运行。关键 YAML 如下：
+
+- **Ollama 访问方式（Windows MVP 推荐）**
+
+Ollama 不部署进 K8s，而是在 Windows 宿主机运行。Flask 网关容器通过宿主机地址访问：
+
+```python
+OLLAMA_BASE = "http://host.docker.internal:11434/api/generate"
+```
+
+如果必须在 K8s 内抽象成 Service，也可以创建一个 `ExternalName` Service，但本地 Docker Desktop 场景下直接在环境变量中配置 `host.docker.internal` 更简单。
+
+- **Ollama Deployment（Linux GPU 服务器 / Windows 进阶方案，可选）**
+
+下面 YAML 只适合 GPU 已经能被 K8s 识别的环境。Windows 笔记本第一阶段不建议使用。
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -160,14 +307,14 @@ spec:
         - containerPort: 11434
         resources:
           limits:
-            nvidia.com/gpu: 1  # 需安装k8s NVIDIA device plugin
+            nvidia.com/gpu: 1  # 需安装 K8s NVIDIA device plugin
         volumeMounts:
         - name: models
           mountPath: /root/.ollama
       volumes:
       - name: models
         hostPath:
-          path: /home/user/.ollama  # 预下载模型目录
+          path: /home/user/.ollama  # Linux 环境下的预下载模型目录
 ```
 
 - **Flask网关 + Service**
@@ -194,6 +341,8 @@ spec:
         env:
         - name: MLFLOW_TRACKING_URI
           value: "http://mlflow-server:5000"
+        - name: OLLAMA_BASE
+          value: "http://host.docker.internal:11434/api/generate"
 ---
 apiVersion: v1
 kind: Service
@@ -272,6 +421,18 @@ df = pd.DataFrame({
 }).reset_index(drop=True)
 st.line_chart(df)
 ```
+
+### Windows 本地部署总结
+
+对于你的 Windows + RTX 4060 笔记本，最终推荐路线是：
+
+```text
+Ollama：Windows / WSL2 宿主机运行，直接使用 RTX 4060
+K8s：部署 Flask Gateway、MLflow、Streamlit、Ingress
+网关：通过 host.docker.internal 调用 Ollama
+```
+
+不要一开始追求把 Ollama 放进 K8s 并让 Pod 直接申请 GPU。这样做虽然更“云原生”，但在 Windows 本地环境里调试成本较高，不适合作为第一阶段目标。
 
 ### 简历优化描述（可直接使用）
 
