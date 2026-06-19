@@ -4,8 +4,8 @@
   "title": "Ask questions about the provided note",
   "titleGenerationStatus": "success",
   "createdAt": 1781098250599,
-  "updatedAt": 1781098828280,
-  "lastResponseAt": 1781098828280,
+  "updatedAt": 1781599749618,
+  "lastResponseAt": 1781599749618,
   "sessionId": "f34c06a4-94b0-4202-ba77-97390e6cfbf3",
   "providerState": {
     "providerSessionId": "f34c06a4-94b0-4202-ba77-97390e6cfbf3"
@@ -13,11 +13,11 @@
   "currentNote": "AI与LLM/项目Git + MLflow + K8s/模型版本管理 自动化测试（Git + MLflow + K8s）.md",
   "usage": {
     "model": "sonnet[1m]",
-    "inputTokens": 183,
+    "inputTokens": 0,
     "cacheCreationInputTokens": 0,
-    "cacheReadInputTokens": 31360,
+    "cacheReadInputTokens": 0,
     "contextWindow": 1000000,
-    "contextTokens": 31543,
-    "percentage": 3
+    "contextTokens": 0,
+    "percentage": 0
   }
 }
