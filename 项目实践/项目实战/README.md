@@ -1,14 +1,14 @@
 ---
-title: 张文暄项目实践
+title: 项目实战
 tags:
   - MOC
   - 导航
   - 项目实践
 ---
 
-# 张文暄项目实践
+# 项目实战
 
-> 该目录汇总项目复盘、Kubernetes 实战、AI 部署与推理服务等笔记。第一阶段仅建立文件夹级 MOC，避免对原始项目笔记做批量侵入式改写。
+> 该目录汇总项目复盘、Kubernetes 实战、AI 部署与推理服务等笔记。聚焦生产环境真实案例，从踩坑到解决的完整记录。
 
 ## Web / 后端 / Bash
 
@@ -28,6 +28,16 @@ tags:
 - [[单节点多核cpu部署embedding reranker|单节点多核 CPU 部署 Embedding / Reranker]]
 - [[cpu gpu npu|CPU / GPU / NPU]]
 - [[npu部署|NPU 部署]]
+
+## LLM / RAG 应用
+
+- [[LLM日志分析系统方案审查|LLM 日志分析系统方案审查]] — 代码问题与修复记录
+- [[LLM日志分析系统完整复现|LLM 日志分析系统完整复现]] — 从环境搭建到运行的完整指南
+
+## MLOps
+
+- [[模型版本管理 自动化测试（Git + MLflow + K8s）|模型版本管理自动化测试（Git + MLflow + K8s）]] — MLOps 完整闭环
+- [[Ubuntu原生系统调用AMD RX580部署方案|Ubuntu AMD RX580 部署方案]] — 非NVIDIA GPU部署方案
 
 ## 上级导航
 
