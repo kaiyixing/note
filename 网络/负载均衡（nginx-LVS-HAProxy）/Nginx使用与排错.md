@@ -4,6 +4,8 @@
 
 ## 一、先建立心智模型
 
+Nginx 是**高性能 HTTP 服务器 + 反向代理 + 负载均衡器**。
+
 把 Nginx 想象成一个**餐厅的前台/传菜台**：
 
 - **客户端**（用户浏览器）把"点单"（HTTP 请求）交给前台。
@@ -17,13 +19,19 @@
 ### 配置分层（看懂 `nginx.conf` 结构）
 ```
 main（worker 数等）
- └─ events（连接模型）
- └─ http（全局 HTTP 设置）
-     └─ upstream（定义一组后端）
-     └─ server（一个虚拟主机 / 一个站点）
-         └─ location（一个路径块，决定怎么处理某类请求）
+ ├─ events（连接模型，worker_connections）
+ ├─ http（全局 HTTP 设置）
+ │    ├─ upstream（定义一组后端）
+ │    └─ server（一个虚拟主机 / 一个站点）
+ │         └─ location（一个路径块，决定怎么处理某类请求）
 ```
 排错时，**先定位到是哪个 `location` 块**，再查该块指令。
+
+**实际配置位置**：
+- `/etc/nginx/nginx.conf`（主配置）
+- `/etc/nginx/conf.d/*.conf`（include 进来的站点配置）
+
+**改配置后必须**：`nginx -t` 校验 → `nginx -s reload` 平滑重载（不断流，老连接处理完再切）。
 
 ## 二、最核心、最易错的点：`proxy_pass` 末尾的 `/`
 
@@ -34,12 +42,29 @@ main（worker 数等）
 
 > 记忆点：**带 `/` 就"吃前缀"，不带就"原样搬"。** 后端 404 时优先怀疑这里写错。
 
-### 三个必透传的请求头
-后端常依赖这些头拿到真实信息，反向代理后不手动设置会"失真"：
+### 三个必透传的请求头（反向代理必配）
+后端需要知道"真实用户 IP"、"原始域名"，不配的话后端拿到的是 Nginx 自己的 IP：
 ```nginx
-proxy_set_header Host $host;                      # 后端拿到的是原域名，不是 IP
-proxy_set_header X-Real-IP $remote_addr;           # 客户端真实 IP
-proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;  # 经过的代理链
+proxy_set_header Host $host;                                    # 原域名（不是IP）
+proxy_set_header X-Real-IP $remote_addr;                         # 客户端真实 IP
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;     # 经过的代理链
+```
+
+> **Spring Boot 后端还需配合**：`application.yml` 配 `server.use-forward-headers: true`，否则拿不到真实 IP。
+
+### 实际示例：后端 Spring Boot 接口路径是 `/user`（不带 `/api` 前缀）
+```nginx
+location /api/ {
+    proxy_pass http://backend/;    # 末尾带/：/api/user → 后端收到 /user ✅
+}
+```
+
+### 用 `^~` 避免正则抢先
+正则优先级高于普通前缀，如果担心被 `~` 正则抢走，用 `^~` 前缀（匹配上后**跳过正则**）：
+```nginx
+location ^~ /api/ {
+    proxy_pass http://backend/;
+}
 ```
 
 ## 三、Location 匹配优先级（排 404/403 的关键）
@@ -123,3 +148,4 @@ http {
 
 ---
 *更新时间：2026-09-11*
+*更新说明：补充入门概念（Nginx 定位、Spring Boot 透传配合、`^~` 用法）、Topic 通配符示例、Spring AMQP 配置示例、confirm/return 代码、手动 ACK 配置、TTL+DLX 延迟消息完整实现、实际配置位置说明。*
