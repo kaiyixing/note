@@ -1,0 +1,3246 @@
+/*
+ @yolo-version: 1.1.2
+ */
+svg.svg-icon.yolo-orbit {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 8.333;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/*
+ * yolo-popover surface classes —— 项目所有弹窗 / 下拉的视觉地基。
+ * 改这块代码 / 写新弹窗前，请通读以下约定（历史曾两次踩坑）。
+ *
+ * ─────────────────────────────────────────────
+ * 1. consumer 必须用抽象组件，不要自己组 Portal + Content
+ * ─────────────────────────────────────────────
+ * 禁止在调用方写 `DropdownMenu.Portal + DropdownMenu.Content + className=...` 的
+ * 组合。统一用 src/components/common/popover/ 下的 <YoloDropdownContent> /
+ * <YoloPopoverContent>，所有视觉 variant 与尺寸通过 props 显式声明。
+ * 参考迁移：ModelSelect.tsx、ReasoningSelect.tsx、ChatListDropdown.tsx。
+ *
+ * ─────────────────────────────────────────────
+ * 2. 视觉 vs 尺寸：共用 class 只管视觉表面
+ * ─────────────────────────────────────────────
+ * 本文件里的 .yolo-popover-surface* class 只允许定义：
+ *   background / border / box-shadow / animation / overflow / z-index
+ * 严禁出现：
+ *   min-width / max-width / max-height / width / margin
+ * 尺寸是 consumer 的责任 —— 通过 minWidth/maxWidth/maxHeight props 传入，
+ * 或一次性需求自带 `yolo-popover-<purpose>` class（例如聊天历史的 -64px 对齐）。
+ * 违反这条会跨组件污染（历史踩坑详见 docs/plans/parsed-wiggling-shore.md）。
+ *
+ * ─────────────────────────────────────────────
+ * 3. 变体规则按文件归属，禁止跨文件覆盖
+ * ─────────────────────────────────────────────
+ *   --default 变体的样式      → src/styles/chat/popover.css
+ *   --elevated 变体用于悬浮菜单和级联选择器。
+ * 同一选择器跨文件出现时胜负只剩源码顺序，是最隐蔽的"屎山"来源。
+ * 真正跨变体共享的样式（如 [data-state='checked']）写无前缀版本，
+ * 但必须在注释里写明"有意跨变体共享"。
+ *
+ * ─────────────────────────────────────────────
+ * 4. 慎用裸标签选择器
+ * ─────────────────────────────────────────────
+ * 避免 `.yolo-popover-surface ul / li / button` 这种命中所有后代标签的写法 ——
+ * 等同于隐式全局副作用，未来任何弹窗内出现 ul/li 都会被牵连。要写就用 class 限定。
+ *
+ * ─────────────────────────────────────────────
+ * 5. 新增弹窗 checklist
+ * ─────────────────────────────────────────────
+ *   [ ] consumer 用 <YoloDropdownContent> / <YoloPopoverContent>
+ *   [ ] 显式传 minWidth / maxWidth / maxHeight，不依赖任何继承
+ *   [ ] 非通用视觉需求自带 `yolo-popover-<purpose>` class，不复用别人的
+ *   [ ] 新 class 一律 `yolo-` 前缀，不新增 `yolo-`
+ *   [ ] 写 variant-scoped 规则时确认放在了对应变体的归属文件里
+ */
+
+.yolo-popover-surface {
+  overflow: hidden;
+}
+
+/* Default variant — used by chat-input dropdowns and chat history. */
+.yolo-popover-surface--default {
+  --yolo-popover-border: color-mix(
+    in srgb,
+    var(--background-modifier-border) 75%,
+    transparent
+  );
+  --yolo-popover-ring: color-mix(
+    in srgb,
+    var(--background-modifier-border) 35%,
+    transparent
+  );
+
+  z-index: 1000;
+  background: var(--background-primary);
+  border: 1px solid;
+  border-color: var(--yolo-popover-border);
+  border-radius: var(--radius-m);
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.12),
+    0 0 0 1px var(--yolo-popover-ring);
+  animation: yolo-popover-fade-in 130ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+/* Elevated variant — heavier shadow, blur backdrop, larger radius. */
+.yolo-popover-surface--elevated {
+  --yolo-popover-border: color-mix(
+    in srgb,
+    var(--background-modifier-border) 65%,
+    transparent
+  );
+  --yolo-popover-ring: color-mix(
+    in srgb,
+    var(--background-modifier-border) 20%,
+    transparent
+  );
+
+  z-index: 10000;
+  background: var(--background-primary);
+  border: 1px solid;
+  border-color: var(--yolo-popover-border);
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 3px var(--yolo-popover-ring),
+    0 12px 32px -8px rgba(0, 0, 0, 0.2),
+    0 4px 12px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(16px);
+  animation: yolo-popover-elevated-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes yolo-popover-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes yolo-popover-elevated-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+/* Chat input: outer wrapper to anchor settings button at top-right */
+.yolo-chat-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.yolo-chat-container {
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+body.is-translucent
+  .workspace-leaf-content[data-type='yolo-chat-view']
+  > .view-content {
+  background-color: var(--background-primary);
+}
+
+body.is-mobile
+  .workspace-leaf-content[data-type='yolo-chat-view']
+  > .view-content.yolo-chat-view-content--keyboard-managed {
+  padding-bottom: 0;
+}
+
+body.is-mobile .yolo-chat-container--mobile-keyboard-managed {
+  height: var(--yolo-chat-mobile-viewport-height, 100%);
+}
+
+.yolo-chat-container--sidebar {
+  --yolo-chat-sidebar-inline-padding: calc(var(--size-4-6) / 2);
+}
+
+.yolo-chat-container--centered {
+  --yolo-chat-content-max-width: min(720px, calc(100% - var(--size-4-6)));
+  --yolo-chat-typeahead-max-width: 400px;
+  --yolo-chat-host-inline-padding: var(--size-4-3);
+}
+
+.yolo-chat-container--centered.yolo-chat-container--empty-state {
+  display: grid;
+  grid-template-rows: auto minmax(0, 3fr) auto minmax(0, 5fr);
+}
+
+.yolo-chat-container--centered.yolo-chat-container--empty-state
+  > .yolo-chat-header {
+  grid-row: 1;
+}
+
+.yolo-chat-container--centered.yolo-chat-container--empty-state
+  > .yolo-chat-conversation-surface {
+  grid-row: 2;
+}
+
+.yolo-chat-container--centered.yolo-chat-container--empty-state
+  > .yolo-chat-footer {
+  grid-row: 3;
+}
+
+.yolo-chat-container--centered.yolo-chat-container--empty-state::after {
+  content: '';
+  grid-row: 5;
+}
+
+.yolo-chat-container--centered.yolo-chat-container--empty-state
+  .yolo-chat-empty-state-overlay {
+  align-items: flex-end;
+  padding-bottom: calc(var(--size-4-6) + var(--size-2-2));
+}
+
+.yolo-chat-container--centered.yolo-chat-container--empty-state
+  .yolo-chat-empty-state {
+  width: min(720px, calc(100% - var(--size-4-4)));
+  padding: 0;
+  background: transparent;
+}
+
+.yolo-chat-container--centered.yolo-chat-container--empty-state
+  .yolo-chat-empty-state-icon,
+.yolo-chat-container--centered.yolo-chat-container--empty-state
+  .yolo-chat-empty-state-description {
+  display: none;
+}
+
+.yolo-chat-container--centered.yolo-chat-container--empty-state
+  .yolo-chat-empty-state-title {
+  margin: 0;
+  font-size: clamp(22px, 2.4vw, 32px);
+  font-weight: var(--font-normal);
+  line-height: 1.25;
+  color: var(--text-normal);
+}
+
+.yolo-chat-container--centered.yolo-chat-container--empty-state.yolo-chat-container--mobile-keyboard-managed {
+  display: flex;
+}
+
+.yolo-chat-container--centered.yolo-chat-container--empty-state.yolo-chat-container--mobile-keyboard-managed::after {
+  content: none;
+}
+
+.yolo-chat-container--sidebar > .yolo-chat-footer,
+.yolo-chat-container--sidebar > .yolo-chat-user-input-files,
+.yolo-chat-container--sidebar > .yolo-chat-input-wrapper {
+  box-sizing: border-box;
+  padding-inline: var(--yolo-chat-sidebar-inline-padding);
+}
+
+.yolo-chat-container--sidebar .yolo-chat-messages .yolo-chat-timeline-row {
+  margin-inline: var(--yolo-chat-sidebar-inline-padding);
+}
+
+.yolo-chat-container--sidebar > .yolo-chat-messages {
+  margin-inline-end: calc(var(--yolo-chat-sidebar-inline-padding) * -1);
+}
+
+.yolo-chat-container--sidebar > .yolo-chat-conversation-surface {
+  margin-inline-end: calc(var(--yolo-chat-sidebar-inline-padding) * -1);
+}
+
+.yolo-chat-container--centered > .yolo-chat-footer,
+.yolo-chat-container--centered > .yolo-chat-user-input-files,
+.yolo-chat-container--centered > .yolo-chat-input-wrapper {
+  width: min(100%, var(--yolo-chat-content-max-width));
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.yolo-chat-container--centered .yolo-chat-messages .yolo-chat-timeline-row {
+  width: min(100%, var(--yolo-chat-content-max-width));
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.yolo-chat-container--centered > .yolo-chat-messages {
+  margin-inline: calc(var(--yolo-chat-host-inline-padding) * -1);
+}
+
+.yolo-chat-container--centered > .yolo-chat-conversation-surface {
+  margin-inline: calc(var(--yolo-chat-host-inline-padding) * -1);
+}
+
+.yolo-chat-container--workspace-wide-header {
+  --yolo-chat-workspace-header-top: var(--size-2-2);
+  --yolo-chat-workspace-header-side: var(--size-4-3);
+  --yolo-chat-workspace-header-gap: var(--size-4-4);
+  --yolo-chat-workspace-header-height: 0px;
+}
+
+.yolo-chat-container--workspace-wide-header > .yolo-chat-header--workspace {
+  position: absolute;
+  top: var(--yolo-chat-workspace-header-top);
+  left: var(--yolo-chat-workspace-header-side);
+  right: var(--yolo-chat-workspace-header-side);
+  margin-bottom: 0;
+  padding: 0;
+  border-bottom: none;
+  background: transparent;
+  pointer-events: none;
+}
+
+.yolo-chat-container--workspace-wide-header
+  > .yolo-chat-header--workspace
+  .yolo-chat-header-right {
+  pointer-events: auto;
+}
+
+.yolo-chat-container--workspace-wide-header
+  > .yolo-chat-header--workspace
+  .yolo-chat-header-right {
+  background: color-mix(in srgb, var(--background-primary) 92%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--background-modifier-border) 82%, transparent);
+  box-shadow:
+    0 10px 28px
+      color-mix(in srgb, var(--background-modifier-box-shadow) 10%, transparent),
+    0 1px 0 color-mix(in srgb, white 10%, transparent) inset;
+  backdrop-filter: blur(12px);
+}
+
+.yolo-chat-container--workspace-wide-header
+  > .yolo-chat-header--workspace
+  .yolo-chat-header-right {
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+.yolo-chat-container--workspace-wide-header
+  > .yolo-chat-header--workspace
+  .yolo-chat-header-buttons {
+  padding-left: var(--size-2-1);
+  margin-left: var(--size-2-1);
+  border-left: 1px solid
+    color-mix(in srgb, var(--background-modifier-border) 72%, transparent);
+}
+
+.yolo-chat-container--workspace-wide-header > .yolo-chat-messages {
+  padding-top: calc(
+    var(--yolo-chat-workspace-header-top) +
+      var(--yolo-chat-workspace-header-height) +
+      var(--yolo-chat-workspace-header-gap)
+  );
+}
+
+.yolo-chat-container--workspace-wide-header > .yolo-chat-messages,
+.yolo-chat-container--workspace-wide-header > .yolo-chat-footer,
+.yolo-chat-container--workspace-wide-header > .yolo-chat-user-input-files,
+.yolo-chat-container--workspace-wide-header > .yolo-chat-input-wrapper {
+  position: relative;
+  z-index: 1;
+}
+
+.yolo-chat-footer {
+  position: relative;
+  /* 工具栏与 Obsidian 面板底栏（词数/字符数等）之间留一点呼吸感 */
+  padding-bottom: 4px;
+}
+
+@keyframes yolo-simple-select-pop {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.yolo-chat-messages {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  /* `clip` (not `hidden`): prevents any descendant — wide markdown tables,
+   * long pre blocks, etc. — from forcing a panel-wide horizontal scrollbar,
+   * without making this element an implicit scroll container (which would
+   * affect sticky positioning and ResizeObserver behavior). Wide content
+   * still gets its own internal scroll via `.yolo-markdown-rendered`. */
+  overflow-x: clip;
+  user-select: text;
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-1);
+  padding-block: var(--size-4-1);
+  margin-block: calc(var(--size-4-1) * -1);
+}
+
+.yolo-chat-messages.yolo-chat-messages--following {
+    overflow-anchor: none;
+  }
+
+.yolo-chat-messages  > .yolo-chat-timeline-content {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    min-width: 0;
+    gap: inherit;
+  }
+
+/* Bottom spacer reserving scroll space for the input overlay (todo panel /
+   * queued bubbles). Must keep its inline `height` regardless of flex
+   * pressure — without flex-shrink:0, an over-full message list would
+   * collapse the spacer back to 0 and re-introduce the occlusion bug. */
+
+.yolo-chat-messages  > .yolo-chat-timeline-content > .yolo-chat-timeline-bottom-spacer {
+    flex: 0 0 auto;
+  }
+
+.yolo-chat-messages .yolo-chat-messages-user {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    align-items: flex-end;
+  }
+
+.yolo-chat-messages .yolo-chat-messages-assistant {
+    display: flex;
+    flex-direction: column;
+  }
+
+.yolo-chat-messages .yolo-assistant-tool-message-group {
+    padding-bottom: var(--size-4-2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-1);
+  }
+
+.yolo-chat-timeline-row {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  min-height: 0;
+}
+
+@keyframes yolo-message-navigator-preview-enter {
+  from {
+    opacity: 0;
+    transform: translate(-4px, -50%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+}
+
+@keyframes yolo-chat-compaction-divider-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes yolo-chat-compaction-pending-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes yolo-chat-compaction-divider-line-enter {
+  from {
+    opacity: 0.4;
+    transform: scaleX(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes yolo-chat-empty-icon-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px) scale(0.88);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.yolo-chat-user-input-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  -webkit-app-region: no-drag;
+  background: var(--background-modifier-form-field);
+  border: var(--input-border-width) solid var(--background-modifier-border);
+  color: var(--text-normal);
+  font-family: inherit;
+  padding: var(--size-4-3) calc(var(--size-2-3) + 1px);
+  font-size: var(--font-ui-small);
+  border-radius: var(--radius-s);
+  outline: none;
+  --yolo-mention-max-width: 240px;
+  --yolo-mention-badge-max-width: 180px;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.yolo-chat-user-input-container:focus-within,.yolo-chat-user-input-container:focus,.yolo-chat-user-input-container:focus-visible,.yolo-chat-user-input-container:active {
+    box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+    transition: box-shadow 0.15s ease-in-out;
+  }
+
+.yolo-chat-user-input-container[data-file-drag-active='true'] {
+  background: color-mix(
+    in srgb,
+    var(--interactive-accent) 11%,
+    var(--background-modifier-form-field)
+  );
+  border-color: color-mix(in srgb, var(--interactive-accent) 72%, transparent);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--interactive-accent) 28%, transparent),
+    0 10px 28px color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+}
+
+.yolo-chat-user-input-container[data-file-drag-active='true']::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--interactive-accent) 7%, transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.yolo-chat-user-input-container[data-file-drag-active='true']::after {
+  content: '';
+  position: absolute;
+  inset: calc(var(--size-2-3) - 1px);
+  border: 1px dashed
+    color-mix(in srgb, var(--interactive-accent) 72%, transparent);
+  border-radius: calc(var(--radius-s) - 1px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.yolo-chat-user-input-container[data-file-drag-active='true']
+  .yolo-chat-user-input-editor,
+.yolo-chat-user-input-container[data-file-drag-active='true']
+  .yolo-chat-user-input-send-row,
+.yolo-chat-user-input-container[data-file-drag-active='true']
+  .yolo-chat-user-input-controls {
+  position: relative;
+  z-index: 2;
+}
+
+.yolo-chat-user-input-container[data-file-drag-active='true']
+  .yolo-chat-user-input-placeholder {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.yolo-chat-user-input-drop-hint {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2-3);
+  max-width: min(80%, 240px);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--interactive-accent);
+  box-shadow: none;
+  font-size: var(--font-ui-large);
+  font-weight: var(--font-semibold);
+  line-height: 1;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+}
+
+.yolo-chat-user-input-drop-hint svg {
+  flex: 0 0 auto;
+}
+
+.yolo-chat-user-input-container[data-file-drag-active='true']
+  .yolo-chat-user-input-upload-button,
+.yolo-chat-user-input-container[data-file-drag-active='true']
+  button.yolo-chat-user-input-submit-button-circle {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.yolo-chat-user-input-container[data-resizable='true'] .yolo-obsidian-textarea,
+.yolo-chat-user-input-container[data-resizable='true'] .yolo-content-editable {
+  min-height: var(--yolo-chat-user-input-height, 80px);
+  max-height: var(--yolo-chat-user-input-height, 80px);
+  height: var(--yolo-chat-user-input-height, 80px);
+}
+
+.yolo-chat-user-input-container[data-resizable='true'] {
+  cursor: text;
+}
+
+.yolo-chat-user-input-container[data-resize-hotspot-active='true'] {
+  cursor: ns-resize;
+}
+
+.yolo-chat-user-input-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-2-2);
+  width: 100%;
+}
+
+.yolo-chat-user-input-resize-hitbox {
+  position: absolute;
+  top: -6px;
+  left: 0;
+  right: 44px;
+  height: 12px;
+  cursor: ns-resize;
+  z-index: 2;
+}
+
+.yolo-chat-user-input-wrapper--compact {
+  max-width: 85%;
+  align-self: flex-end;
+  width: fit-content;
+}
+
+.yolo-chat-user-input-wrapper--compact .yolo-chat-user-input-container {
+  --yolo-chat-user-bubble-bg: color-mix(
+    in srgb,
+    var(--interactive-accent) 18%,
+    var(--background-primary)
+  );
+  --yolo-chat-user-bubble-border: color-mix(
+    in srgb,
+    var(--interactive-accent) 36%,
+    transparent
+  );
+  background: var(--yolo-chat-user-bubble-bg);
+  border-radius: var(--radius-l);
+  border: 1px solid var(--yolo-chat-user-bubble-border);
+  box-shadow: none;
+  padding: var(--size-2-3) var(--size-4-2);
+  transition:
+    background 0.2s ease-in-out,
+    border-color 0.2s ease-in-out;
+  cursor: pointer;
+  gap: var(--size-2-2);
+}
+
+.yolo-chat-user-input-wrapper--compact .yolo-chat-user-input-container:hover {
+  background: color-mix(
+    in srgb,
+    var(--interactive-accent) 24%,
+    var(--background-primary)
+  );
+  border-color: color-mix(in srgb, var(--interactive-accent) 48%, transparent);
+  box-shadow: none;
+}
+
+/* Disable focus effects in compact mode */
+.yolo-chat-user-input-wrapper--compact
+  .yolo-chat-user-input-container:focus-within,
+.yolo-chat-user-input-wrapper--compact .yolo-chat-user-input-container:focus,
+.yolo-chat-user-input-wrapper--compact
+  .yolo-chat-user-input-container:focus-visible,
+.yolo-chat-user-input-wrapper--compact .yolo-chat-user-input-container:active {
+  box-shadow: none;
+}
+
+.yolo-chat-user-input-wrapper--compact .yolo-chat-user-input-files {
+  padding-bottom: 0;
+  gap: var(--size-2-2);
+}
+
+/* Only add bottom margin if there are mentionables */
+.yolo-chat-user-input-wrapper--compact .yolo-chat-user-input-files:not(:empty) {
+  margin-bottom: var(--size-2-2);
+}
+
+.yolo-chat-user-input-wrapper--compact .yolo-chat-user-input-editor {
+  line-height: var(--line-height-normal);
+  pointer-events: none;
+  min-height: unset;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.yolo-chat-user-input-wrapper--compact .yolo-obsidian-textarea,
+.yolo-chat-user-input-wrapper--compact .yolo-content-editable {
+  min-height: unset;
+  max-height: none;
+  height: auto;
+  padding: 0;
+  overflow: visible;
+  background: transparent;
+}
+
+.yolo-chat-user-input-wrapper--compact
+  .yolo-lexical-content-editable-paragraph {
+  margin: 0;
+  line-height: var(--line-height-normal);
+}
+
+.yolo-chat-user-input-wrapper--compact .yolo-chat-user-input-placeholder {
+  color: var(--text-muted);
+  opacity: 0.7;
+  font-size: var(--font-ui-smaller);
+  position: static;
+  padding: 0;
+}
+
+.yolo-user-message-card .yolo-chat-user-input-container {
+  width: fit-content;
+}
+
+.yolo-chat-user-input-files {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  gap: var(--size-4-1);
+  flex-wrap: wrap;
+  padding-bottom: var(--size-4-1);
+}
+
+.yolo-chat-user-input-editor {
+  position: relative;
+}
+
+.yolo-chat-user-input-placeholder {
+  position: absolute;
+  left: var(--size-2-1);
+  right: var(--size-2-1);
+  top: calc(var(--size-2-1) + 1.4px);
+  color: color-mix(in srgb, var(--text-muted) 78%, transparent);
+  pointer-events: none;
+  font-size: var(--font-ui-small);
+}
+
+.yolo-chat-user-input-placeholder .yolo-placeholder-trigger {
+    pointer-events: auto;
+    display: inline-block;
+    min-width: 1.4em;
+    text-align: center;
+    padding: 0 3px;
+    border-radius: 3px;
+    background-color: var(--tag-background);
+    color: var(--tag-color);
+    cursor: pointer;
+    transition: opacity 80ms ease;
+  }
+
+:is(.yolo-chat-user-input-placeholder .yolo-placeholder-trigger):hover {
+      opacity: 0.75;
+    }
+
+.yolo-chat-user-input-send-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  margin-top: auto;
+  /* 用 min-height 而非固定 height：发送圆按钮（24px）比该尺寸大时
+   * 行会自然撑高，避免按钮底边伸出行外、与容器底 padding 视觉不对称 */
+  min-height: var(--size-4-4);
+  gap: var(--size-4-1);
+}
+
+.yolo-chat-user-input-send-row__right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  /* 让占用环到发送按钮的距离 = 发送按钮到输入框右边内边距 */
+  gap: calc(var(--size-2-3) + 1px);
+}
+
+.yolo-chat-user-input-controls {
+  display: flex;
+  flex-direction: row;
+  gap: var(--size-4-1);
+  align-items: center;
+  flex-wrap: nowrap;
+  /* 用 min-height 而非固定 height：发送圆按钮（24px）比该尺寸大时
+   * 行会自然撑高，避免按钮底边伸出行外、与容器底 padding 视觉不对称 */
+  min-height: var(--size-4-4);
+}
+
+.yolo-chat-user-input-controls__left {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-3);
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.yolo-chat-user-input-controls__right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: calc(var(--size-2-3) + 1px);
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.yolo-chat-user-input-controls__left .yolo-chat-input-model-select {
+  max-width: 160px;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.yolo-chat-user-input-controls__left .yolo-reasoning-select {
+  min-width: 72px;
+  flex: 0 1 auto;
+}
+
+.yolo-chat-user-input-controls__left .yolo-chat-input-model-select__model-name {
+  max-width: 120px;
+}
+
+.yolo-chat-user-input-toolbar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--size-4-1);
+  flex-wrap: nowrap;
+  /* 与 .yolo-chat-user-input-container 内边距对齐，使工具栏与编辑区左缘对齐 */
+  padding-inline: calc(var(--size-2-3) + 1px);
+}
+
+.yolo-chat-user-input-toolbar__left {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-3);
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.yolo-chat-user-input-toolbar__right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--size-4-2);
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.yolo-chat-user-input-toolbar__right .yolo-chat-input-model-select {
+  max-width: 260px;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.yolo-chat-user-input-toolbar__right .yolo-reasoning-select {
+  min-width: 72px;
+  flex: 0 1 auto;
+}
+
+.yolo-chat-user-input-toolbar__right .yolo-chat-input-model-select__model-name {
+  max-width: none;
+}
+
+/* 底部工具栏控件：默认用 text-muted + normal 字重，比全局 medium 略轻但仍可读 */
+.yolo-chat-user-input-toolbar button.yolo-chat-input-model-select {
+  font-weight: var(--font-normal);
+  color: var(--text-muted);
+}
+
+.yolo-chat-user-input-toolbar button.yolo-chat-toolbar-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--size-2-1);
+  border-radius: var(--radius-s);
+  color: var(--text-muted);
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.yolo-chat-user-input-toolbar button.yolo-chat-toolbar-icon-button:hover,
+.yolo-chat-user-input-toolbar
+  button.yolo-chat-toolbar-icon-button:focus-visible {
+  color: var(--text-normal);
+  background: var(--background-modifier-hover);
+}
+
+.yolo-chat-user-input-toolbar button.yolo-chat-toolbar-icon-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.yolo-chat-user-input-toolbar button.yolo-chat-input-model-select:hover,
+.yolo-chat-user-input-toolbar button.yolo-chat-input-model-select:focus,
+.yolo-chat-user-input-toolbar button.yolo-chat-input-model-select:focus-visible,
+.yolo-chat-user-input-toolbar
+  button.yolo-chat-input-model-select[data-state='open'] {
+  color: var(--text-normal);
+}
+
+.yolo-chat-user-input-controls .yolo-chat-user-input-submit-button,
+.yolo-chat-user-input-toolbar .yolo-chat-user-input-submit-button,
+.yolo-chat-user-input-send-row .yolo-chat-user-input-submit-button {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-1);
+  min-width: 0;
+  font-size: var(--font-smallest);
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0 var(--size-2-1);
+  cursor: pointer;
+  transition: all 0.1s ease-in-out;
+}
+
+:is(.yolo-chat-user-input-controls .yolo-chat-user-input-submit-button,.yolo-chat-user-input-toolbar .yolo-chat-user-input-submit-button,.yolo-chat-user-input-send-row .yolo-chat-user-input-submit-button):hover {
+    color: var(--text-normal);
+  }
+
+:is(.yolo-chat-user-input-controls .yolo-chat-user-input-submit-button,.yolo-chat-user-input-toolbar .yolo-chat-user-input-submit-button,.yolo-chat-user-input-send-row .yolo-chat-user-input-submit-button) .yolo-chat-user-input-submit-button-icons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+.yolo-chat-user-input-controls__left .yolo-chat-user-input-upload-button,
+.yolo-chat-user-input-send-row .yolo-chat-user-input-upload-button {
+  width: var(--size-4-5);
+  height: var(--size-4-5);
+  padding: 0;
+  gap: 0;
+  border-radius: var(--radius-s);
+  flex: 0 0 auto;
+  justify-content: center;
+  color: var(--text-muted);
+}
+
+:is(.yolo-chat-user-input-controls__left .yolo-chat-user-input-upload-button,.yolo-chat-user-input-send-row .yolo-chat-user-input-upload-button):hover {
+    color: var(--text-normal);
+    background: var(--background-modifier-hover);
+  }
+
+.yolo-chat-input-model-select__label {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* 圆形发送/停止按钮（ChatGPT/Claude 风格）。
+ *
+ * 选择器写成 `button.yolo-chat-user-input-submit-button-circle`，是为了对抗
+ * Obsidian `app.css` 里的 `button:not(.clickable-icon) { box-shadow: var(--input-shadow) }`
+ * ——必须保持等同或更高特异度，否则按钮内会出现一圈 inset 灰环。
+ *
+ * 同样地，Obsidian 的全局规则 `svg { width/height: var(--icon-size) }`
+ * 会覆盖 lucide 通过 inline 属性写入的尺寸 —— 必须在选择器内显式给 svg
+ * 兜底宽高，否则图标会被撑大或缩成奇形怪状。 */
+button.yolo-chat-user-input-submit-button-circle {
+  /* 略大于左侧 `+` 按钮（var(--size-4-5) ≈ 20px），强化"主按钮"地位但
+   * 又不至于撑出 var(--size-4-4) 行高太多。 */
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 50%;
+  border: none;
+  /* 用 Obsidian 设计系统的「主操作按钮」语义色对，自动跟随主题。 */
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    opacity 0.15s ease,
+    transform 0.1s ease;
+  flex: 0 0 auto;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
+  box-shadow: none;
+  outline: 0;
+  line-height: 0;
+}
+
+button.yolo-chat-user-input-submit-button-circle svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+button.yolo-chat-user-input-submit-button-circle:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+button.yolo-chat-user-input-submit-button-circle:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+/* 空输入：淡化态。色用 text-faint 给箭头、bg 用 background-modifier-border。 */
+button.yolo-chat-user-input-submit-button-circle:disabled {
+  background: var(--background-modifier-border);
+  color: var(--text-faint);
+  cursor: default;
+}
+
+/* 生成中：方块图标比箭头略小一点（实心方块视觉重，需要瘦身） */
+button.yolo-chat-user-input-submit-button-circle.is-generating svg,
+button.yolo-chat-user-input-submit-button-circle.is-stop svg {
+  width: 10px;
+  height: 10px;
+}
+
+/* 停止按钮：用次级语义色对，避免和"主提交"撞色。 */
+button.yolo-chat-user-input-submit-button-circle.is-stop {
+  background: var(--background-modifier-border);
+  color: var(--text-normal);
+}
+
+button.yolo-chat-user-input-submit-button-circle.is-stop:hover:not(:disabled) {
+  background: var(--background-modifier-hover);
+}
+
+/* Chat Mode Select */
+.yolo-chat-mode-select {
+  flex-shrink: 0;
+  gap: var(--size-4-1);
+}
+
+.yolo-popover-surface--default
+  .yolo-model-select-list
+  > .yolo-chat-mode-select-item {
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.yolo-chat-mode-select-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 10px 6px 12px;
+}
+
+.yolo-chat-mode-select-item__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  color: var(--text-muted);
+}
+
+.yolo-chat-mode-select-item__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.yolo-chat-mode-select-item__content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.yolo-chat-mode-select-item__label {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--text-normal);
+}
+
+.yolo-chat-mode-select-item__desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.yolo-chat-mode-select-item[data-state='checked']
+  .yolo-chat-mode-select-item__icon,
+.yolo-chat-mode-agent-card[data-state='checked']
+  .yolo-chat-mode-select-item__icon,
+.yolo-chat-mode-select-item[data-highlighted]
+  .yolo-chat-mode-select-item__icon {
+  color: var(--text-normal);
+}
+
+/* Self-drawn dropdown rows: Ask remains a plain button; Agent hosts the YOLO
+ * switch while the outer row keeps the same popover-item sizing as before.
+ * 背景/边框/投影的重置由 acp.css 的
+ * `.yolo-popover-surface button.yolo-chat-mode-select-item` 统一负责。 */
+button.yolo-chat-mode-select-item {
+  width: 100%;
+  height: auto;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.yolo-popover-surface button.yolo-chat-mode-select-item:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--interactive-accent);
+  border-radius: var(--radius-s);
+}
+
+.yolo-popover-surface button.yolo-chat-mode-select-item:hover,
+.yolo-popover-surface button.yolo-chat-mode-select-item[data-highlighted] {
+  background: color-mix(
+    in srgb,
+    var(--background-modifier-hover) 90%,
+    transparent
+  );
+}
+
+.yolo-popover-surface button.yolo-chat-mode-select-item[data-state='checked'],
+.yolo-popover-surface
+  button.yolo-chat-mode-select-item[data-state='checked']:hover,
+.yolo-popover-surface
+  button.yolo-chat-mode-select-item[data-state='checked'][data-highlighted] {
+  background: color-mix(
+    in srgb,
+    var(--background-modifier-hover) 45%,
+    transparent
+  );
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--background-modifier-border) 60%, transparent);
+}
+
+.yolo-reasoning-select .yolo-chat-input-model-select__label {
+  flex: 0 1 auto;
+  text-align: center;
+}
+
+@media (max-width: 520px) {
+  .yolo-chat-user-input-controls__left .yolo-reasoning-select,
+  .yolo-chat-user-input-toolbar__right .yolo-reasoning-select {
+    flex-basis: auto;
+  }
+}
+
+@keyframes yolo-reasoning-current-slide-up {
+  0% {
+    opacity: 0;
+    filter: blur(2px);
+    transform: translateY(7px);
+  }
+  55% {
+    opacity: 1;
+    filter: blur(0.5px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes yolo-reasoning-current-slide-down {
+  0% {
+    opacity: 0;
+    filter: blur(2px);
+    transform: translateY(-7px);
+  }
+  55% {
+    opacity: 1;
+    filter: blur(0.5px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+.yolo-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.yolo-toolcall-container {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+.yolo-toolcall-border-top {
+  border-top: none;
+}
+
+.yolo-toolcall {
+  --yolo-toolcall-header-padding-x: var(--size-2-3);
+  --yolo-toolcall-status-icon-size: 16px;
+  --yolo-toolcall-rail-x: calc(var(--yolo-toolcall-header-padding-x) + 8px);
+  --yolo-toolcall-content-gap: 14px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--size-2-2);
+  padding: 2px 0;
+  font-size: var(--font-ui-smaller);
+}
+
+/* 用 `.yolo-toolcall` 前缀提升特异度，压住 Obsidian 全局
+ * `button:not(.clickable-icon)` 的背景/边框/投影。 */
+.yolo-toolcall button.yolo-toolcall-header {
+  appearance: none;
+  margin: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  box-sizing: border-box;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  outline: none;
+  padding: 2px var(--yolo-toolcall-header-padding-x);
+  display: flex;
+  align-items: center;
+  gap: var(--size-2-3);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  user-select: none;
+  min-height: 24px;
+  color: var(--text-muted);
+  transition: color 120ms ease;
+}
+
+.yolo-toolcall button.yolo-toolcall-header:focus-visible {
+  outline: 2px solid
+    color-mix(in srgb, var(--interactive-accent) 55%, transparent);
+  outline-offset: 1px;
+  box-shadow: none;
+  background: transparent;
+}
+
+.yolo-toolcall button.yolo-toolcall-header:hover {
+  background-color: transparent;
+  color: var(--text-normal);
+}
+
+.yolo-toolcall-header-content {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.yolo-toolcall-header-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--yolo-toolcall-status-icon-size);
+  height: var(--yolo-toolcall-status-icon-size);
+  color: var(--text-faint);
+}
+
+.yolo-toolcall-header-icon--status-inline {
+  color: var(--text-muted);
+}
+
+.yolo-toolcall-header-icon--expand {
+  margin-left: auto;
+  color: var(--text-faint);
+  opacity: 0.9;
+}
+
+.yolo-toolcall-header-tool-name {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  min-width: 0;
+  font-family: var(--font-ui);
+  font-weight: var(--font-normal);
+  font-size: var(--font-ui-smaller);
+  line-height: 1.35;
+}
+
+.yolo-toolcall-header-title,
+.yolo-toolcall-header-separator {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.yolo-toolcall-header-title {
+  color: var(--text-normal);
+  font-weight: var(--font-normal);
+}
+
+.yolo-toolcall-header-summary {
+  min-width: 0;
+  flex: 0 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-muted);
+}
+
+.yolo-toolcall-header-summary-command {
+  color: var(--text-faint);
+}
+
+.yolo-toolcall-header-edit-deltas {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-left: 6px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.yolo-toolcall-header-edit-added {
+  color: var(--text-success);
+}
+
+.yolo-toolcall-header-edit-removed {
+  color: var(--text-error);
+}
+
+.yolo-toolcall-content {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  font-size: var(--font-smallest);
+  gap: var(--size-4-1);
+  max-height: 600px;
+  overflow: auto;
+  padding: 0 var(--size-2-3) var(--size-2-2) var(--yolo-toolcall-content-gap);
+  margin-top: 2px;
+  margin-left: var(--yolo-toolcall-rail-x);
+  border-left: 1px solid
+    color-mix(in srgb, var(--background-modifier-border) 85%, transparent);
+}
+
+.yolo-toolcall-content-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-2-3);
+}
+
+.yolo-toolcall-compaction-pending {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 var(--size-2-3) 0 var(--yolo-toolcall-rail-x);
+  color: var(--text-faint);
+  font-size: var(--font-ui-smaller);
+  line-height: 1.4;
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.yolo-toolcall-compaction-pending--exiting {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.yolo-toolcall-compaction-pending-icon {
+  animation: yolo-toolcall-spin 1s linear infinite;
+}
+
+@keyframes yolo-toolcall-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.yolo-toolcall-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-faint);
+}
+
+.yolo-toolcall-status-success-ring {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.25px solid var(--interactive-accent);
+  color: var(--interactive-accent);
+  box-sizing: border-box;
+}
+
+.yolo-toolcall-status-success-check {
+  stroke-width: 2.3;
+}
+
+.yolo-toolcall-footer {
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  padding: var(--size-4-1);
+}
+
+.yolo-toolcall-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-1);
+}
+
+.yolo-toolcall-footer-actions button {
+  background-color: var(--background-primary-alt);
+  border: 1px solid var(--background-modifier-border);
+  box-shadow: none;
+}
+
+.yolo-toolcall-footer-actions button:hover {
+  background-color: var(--background-modifier-hover);
+  border: 1px solid var(--background-modifier-border-hover);
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yolo-toolcall-compaction-pending {
+    transition: none;
+  }
+}
+
+@keyframes yolo-thinking-icon-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes yolo-thinking-text-shimmer {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
+@keyframes yolo-dot-loader-pulse {
+  0%,
+  80%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.25;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.yolo-user-message-card:hover ~ .yolo-user-message-actions,
+.yolo-user-message-actions:hover,
+.yolo-chat-messages-user:focus-within .yolo-user-message-actions {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+/*
+ * Inline citation markers — produced by injectAnnotationMarkers as
+ * `[N](sourceUrl?yolo-cite=N)`. The visible `[` and `]` brackets are added
+ * via CSS pseudo-elements so the underlying markdown link can stay clean.
+ * Light horizontal margin keeps the marker from crowding adjacent prose
+ * (which matters for CJK text where there's no inter-word whitespace).
+ *
+ * We also suppress Obsidian's default external-link affordances (icon /
+ * padding) — the `[N]` brackets already signal "reference", so the trailing
+ * icon would dominate such a short marker visually.
+ */
+.yolo-markdown-rendered a[href*='yolo-cite='] {
+  margin: 0 0.2em;
+  text-decoration: none;
+  background-image: none;
+  padding-right: 0;
+}
+
+/*
+ * Adjacent markers (`[1][2]`) double-up the margin between them. Drop the
+ * left margin when the previous sibling is another citation marker so the
+ * gap stays equal to the gap against surrounding prose.
+ */
+.yolo-markdown-rendered a[href*='yolo-cite='] + a[href*='yolo-cite='] {
+  margin-left: 0;
+}
+
+.yolo-markdown-rendered a[href*='yolo-cite=']::before {
+  content: '[';
+}
+
+.yolo-markdown-rendered a[href*='yolo-cite=']::after {
+  content: ']';
+  /* Cancel any external-link glyph themes attach via ::after. */
+  background: none;
+  mask: none;
+  -webkit-mask: none;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+}
+
+/* Some themes ship the icon as a separate child SVG node — hide it. */
+.yolo-markdown-rendered a[href*='yolo-cite='] > svg,
+.yolo-markdown-rendered a[href*='yolo-cite='] > .external-link-icon {
+  display: none;
+}
+
+.yolo-markdown-rendered a[href*='yolo-cite=']:hover {
+  text-decoration: underline;
+}
+
+.yolo-streaming-math-pending {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/*
+ * Wide content inside chat-panel markdown — tables, code blocks — must not
+ * push the chat panel itself wider than the viewport. Scoped to
+ * `.yolo-chat-messages` so Apply view / settings markdown (which renders
+ * inside their own width-constrained surfaces) keeps its native sizing.
+ *
+ * Two parts are required:
+ *
+ * 1. Reset `min-width: auto` along the flex chain from `.yolo-chat-messages`
+ *    down to `.yolo-markdown-rendered`. Without this, every flex ancestor
+ *    grows to fit a wide table's intrinsic width, so width constraints on
+ *    `.yolo-markdown-rendered` and below never bite. The `> *` selectors
+ *    target the anonymous wrapper `<div>` that `AssistantMessageContent`
+ *    puts around each markdown block.
+ * 2. Constrain wide elements themselves: tables wrap their cells to fit the
+ *    panel (no horizontal scroll); `<pre>` keeps internal horizontal scroll
+ *    because wrapping code is visually worse than scrolling it.
+ */
+.yolo-chat-timeline-row,
+.yolo-chat-messages-assistant,
+.yolo-chat-messages-user,
+.yolo-chat-messages-assistant > *,
+.yolo-chat-messages-user > *,
+.yolo-chat-messages .yolo-markdown-rendered {
+  min-width: 0;
+}
+
+/* Tables: fill the panel and wrap content instead of horizontally scrolling.
+ * `.table-wrapper` is what newer Obsidian wraps `<table>` in; the `table`
+ * selector is a fallback for older versions that render `<table>` directly.
+ * `display: block` is deliberately NOT applied to `table` so column-width
+ * calculation stays native. */
+.yolo-chat-messages .yolo-markdown-rendered :is(.table-wrapper, table) {
+  max-width: 100%;
+  width: 100%;
+}
+
+/* Long unbreakable tokens (snake_case identifiers, URLs) would otherwise
+ * push cells beyond their container — `overflow-wrap: anywhere` lets the
+ * browser break inside such tokens as a last resort. */
+.yolo-chat-messages .yolo-markdown-rendered :is(th, td) {
+  overflow-wrap: anywhere;
+}
+
+.yolo-chat-messages .yolo-markdown-rendered pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.yolo-chat-messages {
+  --yolo-chat-response-font-family: var(--font-interface);
+}
+
+.yolo-chat-messages
+  .yolo-chat-messages-assistant
+  .yolo-markdown-rendered.markdown-rendered:not(
+    .yolo-assistant-message-metadata-content .yolo-markdown-rendered
+  ) {
+  font-family: var(--yolo-chat-response-font-family);
+}
+.yolo-acp-assistant-content-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-2);
+  margin-top: var(--size-4-2);
+}
+
+.yolo-acp-assistant-image {
+  display: block;
+  max-width: min(100%, 32rem);
+  max-height: 24rem;
+  border-radius: var(--radius-s);
+  object-fit: contain;
+}
+
+.yolo-acp-assistant-audio {
+  max-width: 100%;
+}
+
+.yolo-acp-assistant-resource > pre {
+  max-height: 20rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.yolo-popover-surface ul {
+  padding: 0;
+  list-style: none;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: scroll;
+}
+
+.yolo-popover-surface ul {
+  padding: var(--size-4-1) 0;
+}
+
+/* Shared across ModelSelect variants: let the scroll region shrink with the
+   viewport-clamped popover instead of being clipped by the outer surface. */
+.yolo-model-select-popover {
+  display: flex;
+  flex-direction: column;
+}
+
+.yolo-model-select-popover > .yolo-model-select-list {
+  min-height: 0;
+}
+
+/* Default 变体下的 group-label / separator / list / item 样式。 */
+.yolo-popover-surface--default .yolo-popover-group-label {
+  display: block;
+  margin: 0;
+  padding: 10px 14px 6px 12px;
+  color: color-mix(in srgb, var(--text-muted) 75%, transparent);
+  font-size: 10px;
+  font-weight: var(--font-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  user-select: none;
+  text-align: left;
+  opacity: 0.8;
+}
+
+.yolo-popover-surface--default .yolo-popover-group-separator {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 4px,
+    color-mix(in srgb, var(--background-modifier-border) 50%, transparent) 16px,
+    color-mix(in srgb, var(--background-modifier-border) 50%, transparent)
+      calc(100% - 16px),
+    transparent calc(100% - 4px)
+  );
+  margin: 6px 0;
+}
+
+.yolo-popover-surface--default .yolo-model-select-list {
+  padding: 0;
+  max-height: 540px;
+  overflow-y: auto;
+  /* Auto-hide is handled by Chromium's native overlay scrollbar (triggered
+     by `scrollbar-width`/`scrollbar-color`). Do NOT add a CSS transition on
+     scrollbar-color — Chromium can't interpolate that property, and the
+     stalled transition makes the browser flash the system default (darker)
+     thumb before snapping to ours. Letting the native engine drive the
+     fade-in gives a clean, smooth appear. */
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.yolo-popover-surface--default .yolo-model-select-list:hover,
+.yolo-popover-surface--default .yolo-model-select-list:focus-within {
+  scrollbar-color: color-mix(in srgb, var(--text-muted) 35%, transparent)
+    transparent;
+}
+
+.yolo-popover-surface--default .yolo-model-select-list > .yolo-popover-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 10px 6px 12px;
+  margin: 0;
+  border-radius: var(--radius-s);
+  color: var(--text-normal);
+  font-size: var(--font-ui-smaller);
+  line-height: var(--line-height-tight);
+  cursor: pointer;
+  outline: none;
+}
+
+.yolo-popover-surface--default
+  .yolo-model-select-list
+  > .yolo-popover-item:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: -2px;
+}
+
+/* 首/末项高亮贴面板边缘：列表不再纵向留白，圆角交给边缘项。 */
+.yolo-popover-surface--default
+  .yolo-model-select-list
+  > .yolo-popover-item:first-child {
+  border-top-left-radius: var(--radius-m);
+  border-top-right-radius: var(--radius-m);
+}
+
+.yolo-popover-surface--default
+  .yolo-model-select-list
+  > .yolo-popover-item:last-child {
+  border-bottom-left-radius: var(--radius-m);
+  border-bottom-right-radius: var(--radius-m);
+}
+
+.yolo-popover-surface--default
+  .yolo-model-select-list
+  > .yolo-popover-item:hover,
+.yolo-popover-surface--default
+  .yolo-model-select-list
+  > .yolo-popover-item:focus-visible,
+.yolo-popover-surface--default
+  .yolo-model-select-list
+  > .yolo-popover-item[data-highlighted] {
+  background: color-mix(
+    in srgb,
+    var(--background-modifier-hover) 90%,
+    transparent
+  );
+}
+
+.yolo-popover-surface
+  .yolo-model-select-list
+  > .yolo-popover-item[data-state='checked'] {
+  --yolo-popover-item-checked-inset: color-mix(
+    in srgb,
+    var(--background-modifier-border) 60%,
+    transparent
+  );
+  background: color-mix(
+    in srgb,
+    var(--background-modifier-hover) 45%,
+    transparent
+  );
+  font-weight: var(--font-semibold);
+  box-shadow: inset 0 0 0 1px var(--yolo-popover-item-checked-inset);
+}
+
+/* 贴边选中态：去掉与面板边框重叠的顶/底 inset 描边。 */
+.yolo-popover-surface
+  .yolo-model-select-list
+  > .yolo-popover-item:first-child[data-state='checked'] {
+  box-shadow:
+    inset 0 -1px 0 var(--yolo-popover-item-checked-inset),
+    inset 1px 0 0 var(--yolo-popover-item-checked-inset),
+    inset -1px 0 0 var(--yolo-popover-item-checked-inset);
+}
+
+.yolo-popover-surface
+  .yolo-model-select-list
+  > .yolo-popover-item:last-child[data-state='checked'] {
+  box-shadow:
+    inset 0 1px 0 var(--yolo-popover-item-checked-inset),
+    inset 1px 0 0 var(--yolo-popover-item-checked-inset),
+    inset -1px 0 0 var(--yolo-popover-item-checked-inset);
+}
+
+.yolo-popover-surface
+  .yolo-model-select-list
+  > .yolo-popover-item:first-child:last-child[data-state='checked'] {
+  box-shadow: inset 0 0 0 1px var(--yolo-popover-item-checked-inset);
+}
+
+.yolo-popover-item__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yolo-popover-item__indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--interactive-accent);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.yolo-popover-item[data-state='checked'] .yolo-popover-item__indicator {
+  opacity: 1;
+}
+
+.yolo-popover-surface ul li {
+  margin: 0;
+  min-width: 180px;
+  font-size: var(--font-ui-smaller);
+  outline: none;
+  cursor: pointer;
+  border-radius: 0;
+  text-align: left;
+  justify-content: flex-start;
+}
+
+.yolo-popover-surface ul li.selected {
+  background: var(--background-modifier-hover);
+}
+
+.yolo-popover-surface li {
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+  background-color: var(--background-primary);
+  border: 0;
+  margin: 0 8px 0 8px;
+  padding: var(--size-2-3) var(--size-4-2);
+  color: var(--text-normal);
+  cursor: pointer;
+  line-height: var(--line-height-tight);
+  font-size: var(--font-ui-smaller);
+  display: flex;
+  align-content: center;
+  flex-direction: row;
+  flex-shrink: 0;
+  border-radius: 8px;
+  min-height: 20px;
+  align-items: start;
+  gap: var(--size-4-1);
+}
+
+.yolo-popover-surface li.active {
+  display: flex;
+  width: 20px;
+  height: 20px;
+  background-size: contain;
+}
+
+.yolo-popover-surface li:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.yolo-popover-surface li:hover {
+  background-color: var(--background-modifier-hover);
+  cursor: pointer;
+}
+
+.yolo-popover-surface li .yolo-chat-list-dropdown-item-icon,
+.yolo-popover-surface li .yolo-chat-list-pin-button {
+  visibility: visible;
+  opacity: 0;
+  transform: translateX(5px) scale(0.96);
+  pointer-events: none;
+  transition:
+    opacity 140ms ease,
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 120ms ease,
+    background-color 120ms ease;
+}
+
+.yolo-popover-surface
+  li:is(:hover, :focus-within)
+  .yolo-chat-list-dropdown-item-icon,
+.yolo-popover-surface li:is(:hover, :focus-within) .yolo-chat-list-pin-button {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  pointer-events: auto;
+}
+
+.yolo-popover-surface li .yolo-chat-list-dropdown-item-icon:hover {
+  background-color: var(--background-modifier-hover);
+  border-radius: var(--radius-s);
+}
+
+.yolo-chat-list-dropdown-content > .yolo-model-select-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0;
+}
+
+@keyframes yolo-chat-list-title-shimmer {
+  from {
+    background-position: 220% 50%;
+  }
+  to {
+    background-position: -20% 50%;
+  }
+}
+
+@keyframes yolo-chat-list-run-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes yolo-chat-list-dropdown-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(7px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes yolo-chat-list-dropdown-fade-out {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(5px) scale(0.98);
+  }
+}
+
+.yolo-popover-surface li .yolo-chat-list-pin-button.is-pinned {
+  color: var(--text-normal);
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  pointer-events: auto;
+}
+
+.yolo-popover-surface li .yolo-chat-list-pin-button.is-pinned svg {
+  fill: currentColor;
+}
+
+@keyframes yolo-plan-streaming-preview-pulse {
+  0% {
+    opacity: 0.35;
+  }
+
+  50% {
+    opacity: 0.68;
+  }
+
+  100% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes yolo-plan-streaming-preview-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.985);
+    filter: blur(1px);
+  }
+}
+
+@keyframes yolo-plan-streaming-preview-body-collapse {
+  from {
+    opacity: 0.7;
+    transform: scaleY(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scaleY(0.72);
+  }
+}
+
+@keyframes yolo-plan-preview-content-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.992);
+    background: color-mix(
+      in srgb,
+      var(--background-secondary) 88%,
+      transparent
+    );
+    box-shadow: 0 18px 30px -24px
+      color-mix(in srgb, var(--background-modifier-box-shadow) 90%, transparent);
+  }
+
+  55% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    background: transparent;
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@keyframes yolo-inline-review-resolve-in {
+  from {
+    opacity: 0.74;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+:is(#yolo-apply-view, .yolo-apply-view-root)
+  .yolo-apply-markdown.markdown-rendered {
+  --render-scale: 1;
+  color: var(--text-normal);
+  font-family: var(--font-text, var(--font-interface));
+  font-size: var(--font-text-size, 1rem);
+  line-height: var(--line-height-normal);
+  pointer-events: auto;
+}
+
+.yolo-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yolo-chat-container .yolo-spinner {
+    animation: none;
+  }
+}
+
+button.yolo-chat-input-model-select {
+  background-color: transparent;
+  box-shadow: none;
+  border: 0;
+  padding: 0;
+  font-size: var(--font-smallest);
+  font-weight: var(--font-medium);
+  color: var(--text-muted);
+  cursor: pointer;
+  height: auto;
+}
+
+button.yolo-chat-input-model-select:hover {
+    color: var(--text-normal);
+  }
+
+button.yolo-chat-input-model-select .yolo-chat-input-model-select__model-name {
+    flex-shrink: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+button.yolo-chat-input-model-select .yolo-chat-input-model-select__icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+/* 上下文占用分解 popover ——purpose 类，仅承担尺寸 / 内容布局。
+   宽度跟随 anchor（即 .yolo-chat-user-input-container）；
+   背景 / 阴影沿用 --default 变体（见 popover/surface.css）。 */
+.yolo-popover-surface.yolo-context-breakdown-popover {
+  /* Keep the surface border for definition; drop only the shadow so the card
+   * sits flush above the input without a floating drop-shadow. */
+  box-shadow: none;
+  /* Width tracks the popper anchor element (the input-container, supplied via
+   * Popover.Anchor virtualRef in ContextUsagePopover). The Radix var is
+   * `--radix-popper-anchor-width` (note: popper, not popover) — popover-level
+   * vars only expose trigger width, which here is the tiny ring. */
+  width: var(--radix-popper-anchor-width);
+  /* Do NOT set `max-height` + `overflow: auto` here. The popover is anchored
+   * to the input container (auto-growing Lexical editor), and Radix Popper
+   * observes both anchor and content via ResizeObserver. A scrollbar that
+   * toggles on/off at the height threshold flips content width, which feeds
+   * back into the anchor-width binding above and causes a runaway
+   * "ResizeObserver loop completed with undelivered notifications" storm
+   * (thousands/sec). Content is small enough (6 rows + bar + header) that no
+   * cap is needed. */
+  overflow: visible;
+  padding: 10px 14px 6px;
+}
+
+/* Prefix with `.yolo-popover-surface` so specificity (0,2,0 / 0,2,1) beats the
+ * generic interactive-list rules earlier in this file (.yolo-popover-surface
+ * ul / .yolo-popover-surface ul li, specificity 0,1,1 / 0,1,2 — classes
+ * outweigh element selectors). Without this, the breakdown list inherits
+ * cursor: pointer, hover background, scrollbar, border-radius and per-item
+ * background from the dropdown-flavoured popover rules. */
+.yolo-popover-surface .yolo-context-breakdown__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-height: none;
+  overflow: visible;
+}
+
+.yolo-popover-surface .yolo-context-breakdown__list-item {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  height: 22px;
+  min-height: 22px;
+  /* Reset the dropdown-list-item `min-width: 180px` so a narrow input box
+   * doesn't force the popover to widen past its anchor. */
+  min-width: 0;
+  padding: 0 2px;
+  margin: 0;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-normal);
+  background: transparent;
+  background-color: transparent;
+  border: 0;
+  border-radius: 0;
+  cursor: default;
+  overflow: visible;
+}
+
+.yolo-popover-surface .yolo-context-breakdown__list-item {
+  /* Soft transition for the hover background highlight (Cursor-style). */
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
+}
+
+.yolo-popover-surface .yolo-context-breakdown__list-item:hover {
+  /* Cursor-style row tint — just enough to mark which bucket the bar's
+   * highlighted segment corresponds to. */
+  background: color-mix(
+    in srgb,
+    var(--background-modifier-hover) 70%,
+    transparent
+  );
+  background-color: color-mix(
+    in srgb,
+    var(--background-modifier-hover) 70%,
+    transparent
+  );
+  cursor: default;
+}
+
+@keyframes yolo-context-breakdown-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+/* 任务清单面板：作为 .yolo-chat-input-overlay 的子项，浮在输入框上方，可折叠。
+ * 定位与层级由 .yolo-chat-input-overlay 统一负责，本组件只关心自身样式。
+ * 布局：header（折叠摘要按钮+关闭按钮） → body（列表）
+ * 折叠动画：grid-template-rows 0fr ↔ 1fr，无需测量高度
+ */
+
+.yolo-todo-panel {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m, 8px);
+  background: var(--background-primary);
+  font-size: var(--font-ui-small);
+  overflow: hidden;
+  /* 入场动画：从输入框上沿向上"冒出来"。每次组件从 null 切到渲染都会重跑
+   * （首次出现、清空后再出现、切会话/分支等），不需要 React 端配合。 */
+  animation: yolo-todo-panel-appear 220ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+@keyframes yolo-todo-panel-appear {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 选择器带上 `.yolo-todo-panel` 前缀是为了压住 Obsidian
+ * `app.css` 里的 `button:not(.clickable-icon) { box-shadow: var(--input-shadow) }`
+ * ——必须保持更高特异度，否则会画出一条贴在 header 底部的投影线。 */
+.yolo-todo-panel__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+  padding-right: var(--size-2-2);
+  box-sizing: border-box;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.yolo-todo-panel button.yolo-todo-panel__toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: var(--size-2-2) var(--size-4-2);
+  box-sizing: border-box;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  outline: 0;
+  cursor: pointer;
+  color: inherit;
+  font-size: inherit;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.yolo-todo-panel button.yolo-todo-panel__toggle:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: -2px;
+}
+
+.yolo-todo-panel button.yolo-todo-panel__icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  box-sizing: border-box;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-s);
+  box-shadow: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  line-height: 0;
+}
+
+button.yolo-todo-panel__toggle svg,
+button.yolo-todo-panel__icon-button svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.yolo-todo-panel__header-icon {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.yolo-todo-panel__summary {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yolo-todo-panel__caret {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: transform 220ms ease;
+}
+
+.yolo-todo-panel--collapsed .yolo-todo-panel__caret {
+  transform: rotate(-90deg);
+}
+
+.yolo-todo-panel__body {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 240ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.yolo-todo-panel--collapsed .yolo-todo-panel__body {
+  grid-template-rows: 0fr;
+}
+
+.yolo-todo-panel__body-inner {
+  min-height: 0;
+  max-height: min(36vh, 320px);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.yolo-todo-panel__list {
+  list-style: none;
+  margin: 0;
+  padding: var(--size-2-2) var(--size-4-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-2-1);
+}
+
+.yolo-todo-panel__item {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2-2);
+  padding: var(--size-2-1) 0;
+  color: var(--text-normal);
+  line-height: 1.4;
+}
+
+.yolo-todo-panel__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+}
+
+.yolo-todo-panel__item--in_progress .yolo-todo-panel__icon {
+  color: var(--interactive-accent);
+}
+
+.yolo-todo-panel__item--completed .yolo-todo-panel__icon {
+  color: var(--text-faint);
+}
+
+.yolo-todo-panel__item--cancelled .yolo-todo-panel__icon {
+  color: var(--text-faint);
+}
+
+.yolo-todo-panel__index {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.yolo-todo-panel__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.yolo-todo-panel__item--in_progress .yolo-todo-panel__text {
+  color: var(--text-normal);
+  font-weight: var(--font-medium);
+}
+
+.yolo-todo-panel__item--completed .yolo-todo-panel__text {
+  color: var(--text-faint);
+  text-decoration: line-through;
+}
+
+.yolo-todo-panel__item--cancelled .yolo-todo-panel__text {
+  color: var(--text-faint);
+  text-decoration: line-through;
+}
+
+.yolo-todo-panel__priority {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 12px;
+  width: 12px;
+  height: 16px;
+}
+
+.yolo-todo-panel__priority > span {
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--text-faint);
+}
+
+.yolo-todo-panel__priority--high > span {
+  background: var(--color-red);
+}
+
+.yolo-todo-panel__priority--low > span {
+  opacity: 0.55;
+}
+
+.yolo-todo-panel__icon-spin {
+  animation: yolo-todo-panel-spin 1.4s linear infinite;
+}
+
+@keyframes yolo-todo-panel-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yolo-todo-panel,
+  .yolo-todo-panel__icon-spin {
+    animation: none;
+  }
+
+  .yolo-todo-panel__caret,
+  .yolo-todo-panel__body {
+    transition: none;
+  }
+}
+/* ACP 客户端新增元素的补充样式（配合复用的旧版 input/message/popover 样式） */
+
+.yolo-chat-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.yolo-chat-view * {
+  box-sizing: border-box;
+}
+
+.yolo-acp-session {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 顶栏（标题 + 操作按钮） */
+
+.yolo-acp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--size-4-2);
+  padding: var(--size-4-2) var(--yolo-chat-sidebar-inline-padding, 12px);
+  flex-shrink: 0;
+}
+
+.yolo-acp-header-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--font-ui-medium);
+  font-weight: var(--font-medium);
+  color: var(--text-normal);
+}
+
+.yolo-acp-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* 弹层项统一去除 Obsidian 全局 button 外壳，恢复旧版菜单行样式 */
+
+.yolo-popover-surface button.yolo-popover-item,
+.yolo-popover-surface button.yolo-chat-mode-select-item {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  width: 100%;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.yolo-popover-surface button.yolo-popover-item:hover,
+.yolo-popover-surface button.yolo-chat-mode-select-item:hover {
+  background: color-mix(
+    in srgb,
+    var(--background-modifier-hover) 90%,
+    transparent
+  );
+}
+
+/* 历史记录 */
+
+.yolo-acp-history {
+  position: relative;
+}
+
+.yolo-acp-history-popup {
+  padding: 4px;
+}
+
+/* 历史弹层统一由弹层自身滚动。 */
+.yolo-acp-history-popup .yolo-model-select-list {
+  max-height: none;
+  overflow: visible;
+}
+
+.yolo-acp-history-empty {
+  padding: 12px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  text-align: center;
+}
+
+.yolo-acp-history-date {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-faint);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* 设置引导横幅 */
+
+.yolo-setup-banner {
+  margin: 8px var(--yolo-chat-sidebar-inline-padding, 12px);
+  padding: 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  background: var(--background-secondary);
+  flex-shrink: 0;
+}
+
+.yolo-setup-banner.is-error {
+  border-color: rgba(var(--color-red-rgb), 0.5);
+}
+
+/* 启动中：强调色边框/底色 + 旋转 spinner，明显提示 opencode 正在拉起 */
+
+.yolo-setup-banner.is-starting {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-color: color-mix(in srgb, var(--interactive-accent) 50%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--interactive-accent) 8%,
+    var(--background-secondary)
+  );
+}
+
+.yolo-setup-banner.is-starting .yolo-setup-title {
+  margin-bottom: 2px;
+  font-size: var(--font-ui-medium);
+  color: var(--text-normal);
+}
+
+.yolo-setup-banner.is-starting .yolo-setup-hint {
+  margin-bottom: 0;
+}
+
+.yolo-setup-spinner {
+  flex-shrink: 0;
+  color: var(--interactive-accent);
+  animation: yolo-setup-spin 1s linear infinite;
+}
+
+@keyframes yolo-setup-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yolo-setup-spinner {
+    animation: none;
+  }
+}
+
+.yolo-setup-title {
+  font-weight: var(--font-medium);
+  margin-bottom: 4px;
+  font-size: var(--font-ui-small);
+}
+
+.yolo-setup-hint {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  margin-bottom: 8px;
+}
+
+.yolo-setup-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.yolo-button {
+  padding: 4px 12px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--background-modifier-border);
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: var(--font-ui-small);
+  box-shadow: none;
+}
+
+.yolo-button:hover {
+  background: var(--interactive-hover);
+}
+
+/* 时间线 */
+
+.yolo-acp-empty-hint {
+  color: var(--text-faint);
+  font-size: var(--font-ui-small);
+  text-align: center;
+  padding: 24px 12px;
+}
+
+/* 行间距：在 .yolo-chat-messages 的 gap 之上再拉开，避免气泡与上文相贴 */
+.yolo-chat-messages .yolo-chat-timeline-row {
+  margin-block: var(--size-2-2);
+}
+
+/* 输入区与最后一条消息之间留出呼吸感 */
+.yolo-chat-footer {
+  padding-top: var(--size-4-4);
+}
+
+.yolo-chat-messages-user {
+  display: flex;
+  flex-direction: column;
+}
+
+.yolo-chat-messages-assistant {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-2-1);
+  min-width: 0;
+}
+
+.yolo-acp-generating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  padding-block: 2px;
+}
+
+.yolo-acp-generating-spinner {
+  flex-shrink: 0;
+  color: var(--interactive-accent);
+  animation: yolo-setup-spin 1s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yolo-acp-generating-spinner {
+    animation: none;
+  }
+}
+
+/* 推理过程 */
+
+button.yolo-assistant-message-metadata-toggle {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-faint);
+  font-family: inherit;
+  font-size: var(--font-ui-smaller);
+  cursor: pointer;
+  padding: 2px 0;
+  text-align: left;
+}
+
+button.yolo-assistant-message-metadata-toggle:hover {
+  color: var(--text-muted);
+  background: transparent;
+  box-shadow: none;
+}
+
+.yolo-assistant-message-metadata-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.yolo-assistant-message-metadata-content {
+  margin: 2px 0 6px;
+}
+
+.yolo-assistant-message-metadata-body {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  border-left: 2px solid var(--background-modifier-border);
+  padding-left: 10px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.yolo-assistant-message-metadata-body .yolo-markdown-rendered {
+  color: var(--text-muted);
+}
+
+/* 用户消息内的附件 */
+
+.yolo-acp-user-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.yolo-acp-user-link-chip {
+  font-size: var(--font-ui-smaller);
+  background: var(--background-modifier-hover);
+  border-radius: 4px;
+  padding: 1px 6px;
+  color: var(--text-muted);
+}
+
+.yolo-acp-user-images {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.yolo-acp-user-images img {
+  max-width: 160px;
+  max-height: 160px;
+  border-radius: 8px;
+}
+
+/* 工具卡片内容 */
+
+.yolo-acp-status-failed {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.25px solid var(--color-red);
+  color: var(--color-red);
+  box-sizing: border-box;
+}
+
+.yolo-toolcall-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 2px var(--yolo-toolcall-header-padding-x);
+}
+
+.yolo-acp-tool-locations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.yolo-acp-tool-location {
+  font-size: var(--font-ui-smaller);
+  font-family: var(--font-monospace);
+  color: var(--text-muted);
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yolo-acp-tool-text {
+  margin: 0;
+  padding: 6px 8px;
+  background: var(--background-secondary);
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-smaller);
+  max-height: 240px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.yolo-acp-tool-image {
+  max-width: 240px;
+  border-radius: 6px;
+}
+
+.yolo-acp-subagent-result {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.yolo-acp-subagent-result-title {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-medium);
+}
+
+.yolo-acp-subagent-running {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  line-height: 1.4;
+}
+
+/* 权限审批 */
+
+.yolo-acp-permission {
+  margin: 2px var(--yolo-toolcall-header-padding-x);
+  padding: 8px;
+  border: 1px solid rgba(var(--color-yellow-rgb), 0.4);
+  border-radius: var(--radius-s);
+  background: var(--background-secondary);
+}
+
+.yolo-acp-permission-title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--font-ui-small);
+  color: var(--color-yellow);
+  margin-bottom: 6px;
+}
+
+.yolo-acp-permission-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.yolo-acp-permission-button {
+  padding: 3px 10px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--background-modifier-border);
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: var(--font-ui-small);
+  box-shadow: none;
+}
+
+.yolo-acp-permission-button.is-allow:hover {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.yolo-acp-permission-button.is-reject:hover {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
+/* Diff 预览 */
+
+.yolo-diff {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  overflow: hidden;
+}
+
+.yolo-diff-path {
+  padding: 4px 8px;
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  background: var(--background-secondary);
+  border-bottom: 1px solid var(--background-modifier-border);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yolo-diff-body {
+  margin: 0;
+  padding: 4px 0;
+  font-size: var(--font-ui-smaller);
+  max-height: 280px;
+  overflow: auto;
+}
+
+.yolo-diff-line {
+  display: flex;
+  padding: 0 8px;
+  font-family: var(--font-monospace);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.yolo-diff-line--added {
+  background: rgba(var(--color-green-rgb), 0.12);
+}
+
+.yolo-diff-line--removed {
+  background: rgba(var(--color-red-rgb), 0.12);
+}
+
+.yolo-diff-sign {
+  width: 14px;
+  flex-shrink: 0;
+  color: var(--text-faint);
+}
+
+/* 输入区 textarea（替代旧 Lexical contenteditable） */
+
+.yolo-chat-user-input-toolbar {
+  margin-top: var(--size-4-2);
+}
+
+/* 底部工具栏内选择器：允许收缩（长模型名截断而非撑破布局） */
+.yolo-chat-user-input-toolbar .yolo-acp-select {
+  min-width: 0;
+}
+
+/* 选择器按钮内图标与文字的间距（如思考强度前的 Brain 图标） */
+.yolo-chat-user-input-toolbar button.yolo-chat-input-model-select {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-4-1);
+}
+
+.yolo-acp-textarea {
+  width: 100%;
+  border: none;
+  background: transparent;
+  resize: none;
+  padding: 0 2px;
+  min-height: calc(var(--font-ui-small) * 3);
+  max-height: 160px;
+  font-family: inherit;
+  font-size: var(--font-ui-small);
+  line-height: 1.5;
+  color: var(--text-normal);
+  box-shadow: none;
+}
+
+.yolo-acp-textarea:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.yolo-acp-textarea::placeholder {
+  color: color-mix(in srgb, var(--text-muted) 78%, transparent);
+}
+
+button.yolo-chat-user-input-submit-button-circle.is-stop {
+  background: var(--color-red);
+  color: var(--text-on-accent);
+}
+
+.yolo-acp-input-image {
+  position: relative;
+}
+
+/* 输入区附加笔记 chips（VSCode 风格：X 在左、紧凑单行） */
+
+.yolo-acp-note-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2-1);
+  max-width: 200px;
+  height: 22px;
+  padding: 0 var(--size-2-2);
+  font-size: var(--font-ui-smaller);
+  line-height: 1;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+}
+
+.yolo-acp-note-chip:hover {
+  background: var(--background-modifier-hover);
+}
+
+.yolo-acp-note-chip__remove {
+  display: flex;
+  align-items: center;
+  height: auto;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+
+.yolo-acp-note-chip__remove:hover {
+  color: var(--text-normal);
+}
+
+.yolo-acp-note-chip__icon {
+  flex-shrink: 0;
+  color: var(--text-faint);
+}
+
+.yolo-acp-note-chip__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 附件弹层顶部的「添加图片」入口 */
+
+.yolo-acp-attach-actions {
+  padding: var(--size-4-1) var(--size-4-1) 0;
+  flex-shrink: 0;
+}
+
+.yolo-acp-attach-actions__icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.yolo-acp-input-image img {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--background-modifier-border);
+}
+
+.yolo-acp-input-image-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: none;
+  background: var(--background-modifier-border);
+  color: var(--text-normal);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.yolo-acp-note-chip__remove:focus-visible,
+.yolo-acp-input-image-remove:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 1px;
+}
+
+.yolo-acp-attachment-error {
+  color: var(--text-error);
+  font-size: var(--font-ui-smaller);
+  line-height: 1.4;
+}
+/* 选择器弹层（portal 到 body，向上弹出，位置由 JS 计算） */
+
+.yolo-acp-select {
+  position: relative;
+  display: flex;
+}
+
+.yolo-acp-select-popover {
+  min-width: 180px;
+  max-width: 280px;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  overflow-y: hidden;
+}
+
+.yolo-acp-select-popover .yolo-model-select-list {
+  overflow-y: auto;
+}
+
+.yolo-acp-select-search {
+  padding: var(--size-4-1) var(--size-4-1) 0;
+  flex-shrink: 0;
+}
+
+.yolo-acp-select-search input {
+  width: 100%;
+}
+
+.yolo-acp-note-results-limited {
+  flex-shrink: 0;
+  padding: var(--size-2-2) var(--size-4-2);
+  border-top: 1px solid var(--background-modifier-border);
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+/* 斜杠命令弹层 */
+
+.yolo-acp-command-popup {
+  margin-bottom: 4px;
+  padding: 4px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.yolo-acp-command-popup .yolo-popover-item.is-active {
+  background: var(--background-modifier-hover);
+}
+
+/* 斜杠命令条目：两行布局（命令名 + 描述），与模式选择弹层一致 */
+.yolo-acp-command-popup .yolo-model-select-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-2-1);
+}
+
+.yolo-popover-surface--default
+  .yolo-model-select-list
+  > button.yolo-acp-command-item {
+  justify-content: flex-start;
+  align-items: flex-start;
+  height: auto;
+  padding: var(--size-4-2) var(--size-4-3);
+}
+
+.yolo-acp-command-item__content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.yolo-acp-command-item__label {
+  font-weight: var(--font-medium);
+  line-height: 1.3;
+}
+
+.yolo-acp-command-desc {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 错误横幅 */
+
+.yolo-acp-error-banner {
+  margin: 0 0 6px;
+  padding: 8px 12px;
+  border: 1px solid rgba(var(--color-red-rgb), 0.5);
+  border-radius: var(--radius-s);
+}
+
+.yolo-acp-error-title {
+  color: var(--color-red);
+  font-size: var(--font-ui-small);
+}
+
+.yolo-acp-error-hint {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  margin-top: 2px;
+}
+
+/* 计划面板与输入框的间距 */
+
+.yolo-chat-footer .yolo-todo-panel {
+  margin-bottom: 6px;
+}
+
+/* 设置页提示词编辑框：整行换行布局，编辑框占满控件区宽度 */
+
+.yolo-settings-prompt-setting {
+  flex-wrap: wrap;
+}
+
+.yolo-settings-prompt-setting .setting-item-control {
+  flex: 1 1 100%;
+  flex-wrap: wrap;
+  gap: var(--size-2-2);
+}
+
+.yolo-settings-prompt-textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 240px;
+  margin: 0;
+  padding: var(--size-4-2) var(--size-4-3);
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-smaller);
+  line-height: 1.6;
+  color: var(--text-normal);
+  background: var(--background-modifier-form-field);
+  border: var(--input-border-width) solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  resize: vertical;
+}
+
+.yolo-settings-prompt-textarea:focus {
+  border-color: var(--background-modifier-border-focus);
+  outline: none;
+}
