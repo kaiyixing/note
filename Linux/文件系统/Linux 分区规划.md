@@ -161,6 +161,34 @@ mount | grep sda           # 看挂载点
 | swap 建议 | 内存 1~2 倍（16GB+ 可不设） | 内存/2 |
 | 手动分区入口 | "其他选项" | "自定义" |
 
+## 八、df 与 du 常用参数速查
+
+### df — 看分区使用率
+
+```bash
+df -h          # 人类可读，最常用
+df -h -i      # 看 inode（小文件耗尽必查）
+df -h -T      # 显示文件系统类型
+df -h -x tmpfs -x devtmpfs  # 排除内存文件系统
+```
+
+### du — 看目录实际占用
+
+```bash
+du -sh /var/log/* | sort -hr | head -10   # 找最大目录
+du -sh /data                                 # 总大小
+du -sh --max-depth=1 /data                   # 第一层各子目录
+du -sh --exclude="*.log" /data               # 排除日志
+```
+
+### 排查链
+
+```bash
+df -h -i              # 哪个分区满了
+du -sh /var/* | sort -hr | head -20   # 被谁吃了
+lsof +L1             # 已删文件占空间
+```
+
 ## 相关
 
 - [[Linux 系统核心组件配置文件速查表]]
