@@ -126,6 +126,41 @@ df -h                      # 看挂载和使用率
 mount | grep sda           # 看挂载点
 ```
 
+## 七、Ubuntu / CentOS 安装时的实际分区
+
+### Ubuntu 手动分区（256GB 磁盘，16GB 内存）
+
+```
+/dev/sda1  /boot/efi    1GB     FAT32   EFI 引导
+/dev/sda2  /boot        1GB     Ext4    内核+GRUB
+/dev/sda3  swap         4~8GB   swap    内存 16GB+ 可跳过
+/dev/sda4  /            40GB    Ext4    系统+二进制
+/dev/sda5  /home        剩余     Ext4    用户数据
+```
+
+- 双系统：EFI 分区复用 Windows 已有的，**不要格式化**
+- 默认自动分区只分 `/` + `swap`，不推荐服务器用（/var、/home 不独立）
+
+### CentOS 安装（LVM 默认）
+
+```
+/dev/sda1  /boot/efi      1GB     xfs      EFI
+/dev/mapper/centos-root  /        20GB     xfs
+/dev/mapper/centos-swap  swap     内存/2   swap
+```
+
+- 默认 xfs，大文件系统（4TB+）性能更好
+- LVM 装完后 `lvextend` 可动态扩缩（xfs 只能扩不能缩）
+
+### 对比
+
+| 维度 | Ubuntu | CentOS |
+|------|--------|--------|
+| 默认文件系统 | ext4 | xfs |
+| 默认 LVM | 可选 | 默认 |
+| swap 建议 | 内存 1~2 倍（16GB+ 可不设） | 内存/2 |
+| 手动分区入口 | "其他选项" | "自定义" |
+
 ## 相关
 
 - [[Linux 系统核心组件配置文件速查表]]
