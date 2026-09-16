@@ -71,10 +71,19 @@ Attention 本身**不感知顺序**（打乱输入结果不变），所以加位
 4. **参数量大头？** Embedding + 每层 FFN（通常 4×d_model 维度）+ Attention 投影矩阵。
 5. **d_model 常见值？** GPT-2 768~1600，LLaMA 系 4096+，越大越强但越贵。
 
+## 3.5 词嵌入矩阵（Token Embedding Matrix）
+
+- 形状：`[vocab_size, d_model]`，本质是一张**可学习的查表词典**
+- 输入 token ID → 取出矩阵中对应一行 → 得到该词的 d_model 维稠密向量
+- 初始化：随机正态分布，训练中随梯度更新；高频词更新更稳定，低频词易欠拟合
+- 常见优化：**weight tying**（输入 embedding 与输出层共享同一矩阵），减少参数量
+- 参数量占比：`V × D`，如 LLaMA-7B 词表 32000 × D=4096 ≈ 1.3 亿，常占总参数 20%~50%
+- 类比：查字典——输入词 ID，翻到那一行，拿到一组数字
+
 ## 四、动手验证
 
 - HuggingFace `pipeline('text-generation')` / `pipeline('token-classification')` 跑通
 - `bertviz` 可视化注意力权重，直观看"哪些词在关注哪些词"
 
 ---
-*创建时间：2026-09-11*
+*创建时间：2026-09-11 · 更新：2026-09-16 追加词嵌入矩阵小节*
