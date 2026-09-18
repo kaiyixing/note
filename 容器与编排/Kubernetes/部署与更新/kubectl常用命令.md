@@ -38,6 +38,16 @@
 | `kubectl set image deploy/<name> app=nginx:1.25` | 直接改镜像版本触发滚动更新 |
 | `kubectl scale deploy/<name> --replicas=5` | 扩缩容 |
 
+### 命名空间操作
+
+| 命令 | 说明 |
+|------|------|
+| `kubectl create namespace <name>` | 创建命名空间 |
+| `kubectl get namespaces` / `kubectl get ns` | 查看所有命名空间 |
+| `kubectl delete namespace <name>` | 删除命名空间（需手动清理该 ns 下所有资源才能删干净） |
+| `kubectl config set-context --current --namespace=<ns>` | 将当前 context 默认命名空间设为 `<ns>`，后续命令无需再写 `-n` |
+| `kubectl config view` | 查看当前 context 默认命名空间配置 |
+
 ### 常用技巧
 
 | 命令 | 说明 |
