@@ -30,13 +30,24 @@
 
 | 命令 | 说明 |
 |------|------|
-| `kubectl apply -f deploy.yaml` | 创建/更新资源 |
+| `kubectl apply -f deploy.yaml` | 创建/更新资源（`-f` 为必填，指定清单来源文件/目录/stdin） |
 | `kubectl apply -f - < deploy.yaml` | 管道输入 |
 | `kubectl delete -f deploy.yaml` | 按清单删除 |
 | `kubectl rollout status deploy/<name>` | 观察滚动更新进度 |
 | `kubectl rollout undo deploy/<name>` | 回滚到上一版本 |
 | `kubectl set image deploy/<name> app=nginx:1.25` | 直接改镜像版本触发滚动更新 |
 | `kubectl scale deploy/<name> --replicas=5` | 扩缩容 |
+
+### 资源删除与标签选择
+
+| 命令 | 说明 |
+|------|------|
+| `kubectl delete pod <name> -n <ns>` | 删除指定命名空间下某个 Pod |
+| `kubectl delete pod -n <ns> -l app=mysql` | 按标签选择器删除该 ns 下所有 `app=mysql` 的 Pod |
+| `kubectl delete pod --all -n <ns>` | 批量删除命名空间下所有 Pod |
+| `kubectl delete pod -n <ns> -l app=mysql --dry-run=server` | 干跑，仅校验不真正删除 |
+
+> 注意：若 Pod 由 Deployment/ReplicaSet 等控制器管理，删除后会被控制器自动重建。
 
 ### 命名空间操作
 
