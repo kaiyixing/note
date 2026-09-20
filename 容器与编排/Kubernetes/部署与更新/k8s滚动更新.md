@@ -111,6 +111,15 @@ kubectl rollout undo deployment/<deployment-name> --to-revision=2
 
 > 💡 **集成建议**：滚动更新是 CI/CD 流水线的关键环节。结合 [[../../Helm与包管理/Helm包管理详解|Helm]] 可以实现版本化部署管理，配合 [[../../CI-CD与集成/CI-CD集成详解|CI/CD 工具]] 可完全自动化更新流程。详细的 Kubernetes 知识体系参考 [[../../基础知识/Kubernetes知识梳理|Kubernetes 知识梳理]]。
 
+### 触发重启（v1.15+）
+
+`kubectl rollout restart deployment/<name>`：不改变镜像或配置，仅强制所有 Pod 滚动重新拉起。
+
+- **原理**：在 Pod 模板 annotation 中写入 `kubectl.kubernetes.io/restartedAt: <时间戳>`，使 `pod-template-hash` 变化，ReplicaSet 控制器据此用新模板逐个替换旧 Pod。
+- **场景**：应用僵死、缓存需刷新、配置未热加载等无需改镜像的情况。
+- **注意**：`strategy.type: Recreate` 时先删全部再拉起，服务会短暂中断；`RollingUpdate`（默认）保证新 Pod Ready 后才删旧 Pod。
+- DaemonSet 同样适用：`kubectl rollout restart daemonset/<name>`
+
 ## 相关笔记
 
 - [[../../基础知识/Kubernetes知识梳理|Kubernetes 知识梳理]] — 集群知识体系
