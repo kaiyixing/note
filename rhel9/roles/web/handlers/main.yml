@@ -1,6 +1,0 @@
----
-# handlers file for roles/web
-- name: restart httpd
-  service: 
-    name: httpd 
-    state: restarted
