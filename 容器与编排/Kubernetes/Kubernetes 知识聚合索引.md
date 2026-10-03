@@ -23,7 +23,7 @@ tags:
 | 5 | **Service** | ✅ **已打通** | [[Service完全打通-调谐循环视角]] |
 | 6 | Ingress & Gateway API | ⏳ 待学习 | 依赖第 5 项，必须排在 Service 之后 |
 | 7 | NetworkPolicy | ⏳ 待学习 | |
-| 8 | Storage（PV/PVC/SC） | ⏳ 待学习 | [[容器与编排/Kubernetes/存储卷/__学习方向]] |
+| 8 | **Storage（PV/PVC/SC）** | ✅ **已打通** | [[容器与编排/Kubernetes/存储卷/存储PV-PVC完全打通-供需撮合视角]] |
 | 9 | Scheduling & Resource | ⏳ 待学习 | |
 | 10 | Autoscaling（HPA/VPA） | ⏳ 待学习 | [[容器与编排/Kubernetes/HPA与弹性伸缩/__学习方向]] |
 | 11 | Security（RBAC/SA） | ⏳ 待学习 | [[容器与编排/Kubernetes/权限与安全/RBAC权限管理详解]] |
@@ -89,9 +89,9 @@ tags:
                                         │
         ┌───────────────────────────────┤
         ▼                               ▼
-   ⑧ 存储 PV/PVC                    ⑨ 调度 Scheduling
-   （纯控制面，最好理解               （最简单的一次性绑定，
-     双循环与 Pending 等待）            学完就明白 Pod 为何 Pending）
+   ⑧ 存储 PV/PVC ✅                    ⑨ 调度 Scheduling
+   （撮合而非自造，               （最简单的一次性绑定，
+     数据面不在 K8s 手里）            学完就明白 Pod 为何 Pending）
         │                               │
         └───────────────┬───────────────┘
                         ▼
@@ -124,6 +124,7 @@ tags:
 | 2026-05-28 | ConfigMap & Secret | Volume 挂载/envFrom/symlink 更新机制/base64 | [[k8s-知识总结-2026-05-28]] |
 | 2026-05-31 | Service Deep Dive | kube-proxy 模式/Service 类型/EndpointSlice | [[k8s-知识总结-2026-05-31]] |
 | **2026-10-01** | **Service 打通** | **调谐循环视角 + VIP 本质 + 概率链 + 排障树** | [[Service完全打通-调谐循环视角]] |
+| **2026-10-03** | **存储 PV/PVC 打通** | **供需撮合模型 + 数据面归属 + Multi-Attach 排障** | [[容器与编排/Kubernetes/存储卷/存储PV-PVC完全打通-供需撮合视角]] |
 
 ---
 
@@ -145,7 +146,8 @@ tags:
 
 ### 网络与存储
 - [[容器与编排/Kubernetes/Ingress与网络策略/网络插件详解-Calico-Flannel]] — CNI 与排障
-- [[容器与编排/Kubernetes/存储卷/__学习方向]] — 存储方向
+- [[容器与编排/Kubernetes/存储卷/存储PV-PVC完全打通-供需撮合视角]] — ⭐ 存储：供需撮合 + 数据面归属 + 排障
+- [[容器与编排/Kubernetes/存储卷/__学习方向]] — 存储实操清单与选型
 - [[容器与编排/Kubernetes/HPA与弹性伸缩/__学习方向]] — HPA 方向
 - [[容器与编排/Kubernetes/Operator/__学习方向]] — Operator 进阶
 - [[容器与编排/Kubernetes/权限与安全/RBAC权限管理详解]] — RBAC（唯一非循环模块）
